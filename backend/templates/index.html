@@ -818,7 +818,9 @@
                 
                 loading.classList.remove('show');
                 responseContent.style.display = 'block';
-                responseContent.textContent = result.response;
+                
+                // Display enhanced response with new format
+                displayEnhancedResponse(result);
 
                 // Display generated code
                 if (result.generated_code) {
@@ -838,6 +840,76 @@
                 showError('分析失败: ' + error.message);
                 queryBtn.disabled = false;
             }
+        }
+
+        function displayEnhancedResponse(result) {
+            const responseContent = document.getElementById('responseContent');
+            
+            // Use user_response if available (from new response generation agent)
+            let mainResponse = result.user_response || result.response || "抱歉，没有生成回答。";
+            let summary = result.response_summary || "";
+            let recommendations = result.recommendations || [];
+            
+            // Build enhanced response HTML
+            let responseHTML = `
+                <div style="background: white; padding: 20px; border-radius: 8px; line-height: 1.6;">
+                    <div style="margin-bottom: 20px;">
+                        ${mainResponse.split('\n').map(line => `<p>${line}</p>`).join('')}
+                    </div>
+            `;
+            
+            // Add summary if available
+            if (summary) {
+                responseHTML += `
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #007bff;">
+                        <h4 style="margin: 0 0 10px 0; color: #007bff;">📊 处理摘要</h4>
+                        <p style="margin: 0;">${summary}</p>
+                    </div>
+                `;
+            }
+            
+            // Add recommendations if available
+            if (recommendations && recommendations.length > 0) {
+                responseHTML += `
+                    <div style="background: #e8f5e9; padding: 15px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #28a745;">
+                        <h4 style="margin: 0 0 10px 0; color: #28a745;">💡 建议</h4>
+                        <ul style="margin: 0; padding-left: 20px;">
+                            ${recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            // Add technical details if available (for advanced users)
+            if (result.technical_details) {
+                responseHTML += `
+                    <details style="margin-top: 20px;">
+                        <summary style="cursor: pointer; font-weight: bold; color: #6c757d;">🔧 技术详情</summary>
+                        <div style="background: #f8f9fa; padding: 15px; margin-top: 10px; border-radius: 5px; font-size: 14px;">
+                            <p><strong>工作流类型:</strong> ${result.technical_details.workflow_type || 'N/A'}</p>
+                            <p><strong>处理步骤:</strong> ${result.technical_details.processing_steps ? result.technical_details.processing_steps.length : 0} 步</p>
+                            ${result.technical_details.code_generated ? '<p><strong>代码生成:</strong> ✅</p>' : ''}
+                            ${result.technical_details.limitations && result.technical_details.limitations.length > 0 ? 
+                                `<p><strong>限制:</strong> ${result.technical_details.limitations.join(', ')}</p>` : ''}
+                        </div>
+                    </details>
+                `;
+            }
+            
+            // Add workflow status indicator
+            if (result.status) {
+                const statusColor = result.status === 'success' ? '#28a745' : (result.status === 'failed' ? '#dc3545' : '#ffc107');
+                const statusIcon = result.status === 'success' ? '✅' : (result.status === 'failed' ? '❌' : '⚠️');
+                responseHTML += `
+                    <div style="margin-top: 20px; padding: 10px; background: rgba(${result.status === 'success' ? '40, 167, 69' : (result.status === 'failed' ? '220, 53, 69' : '255, 193, 7')}, 0.1); border-radius: 5px; border-left: 4px solid ${statusColor};">
+                        <small><strong>${statusIcon} 状态:</strong> ${result.status === 'success' ? '处理成功' : (result.status === 'failed' ? '处理失败' : '部分完成')}</small>
+                    </div>
+                `;
+            }
+            
+            responseHTML += '</div>';
+            
+            responseContent.innerHTML = responseHTML;
         }
 
         function setQuery(query) {

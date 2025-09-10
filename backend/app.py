@@ -18,6 +18,7 @@ import json
 
 # Import our Excel to HTML utility
 from utils.excel_to_html import excel_to_html, get_excel_sheets, excel_sheet_to_html, get_excel_info
+from utils.file_manager import file_manager
 
 # Add src directory to Python path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
@@ -146,10 +147,53 @@ orchestrator = None
 uploaded_files = {}
 mcp_initialized = False
 
+# Initialize file recovery at startup
+def initialize_file_recovery():
+    """Recover uploaded files from persistent storage."""
+    global uploaded_files
+    try:
+        stored_files = file_manager.list_files()
+        uploaded_files.update(stored_files)
+        print(f"Recovered {len(stored_files)} files from persistent storage")
+        
+        # Clean up old files (older than 24 hours)
+        cleaned_count = file_manager.cleanup_old_files(max_age_hours=24)
+        if cleaned_count > 0:
+            print(f"Cleaned up {cleaned_count} old files")
+            
+    except Exception as e:
+        print(f"Error during file recovery: {e}")
+
+# Recover files on startup
+initialize_file_recovery()
+
 
 def allowed_file(filename):
     """Check if file extension is allowed."""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def get_file_info_safe(file_id: str):
+    """
+    Safely get file info, trying memory cache first, then persistent storage.
+    
+    Returns:
+        file_info dict or None if not found
+    """
+    global uploaded_files
+    
+    # Check in-memory cache first
+    if file_id in uploaded_files:
+        return uploaded_files[file_id]
+    
+    # Try to recover from persistent storage
+    file_info = file_manager.get_file_info(file_id)
+    if file_info is not None:
+        # Add to in-memory cache
+        uploaded_files[file_id] = file_info
+        return file_info
+    
+    return None
 
 
 async def initialize_agent_system():
@@ -303,6 +347,9 @@ def upload_file():
             'processed': False
         }
         
+        # Store file persistently
+        stored_path = file_manager.store_file(file_id, file_path, file_info)
+        file_info['file_path'] = stored_path
         uploaded_files[file_id] = file_info
         
         return jsonify({
@@ -358,6 +405,9 @@ def upload_batch_files():
                 'processed': False
             }
             
+            # Store file persistently
+            stored_path = file_manager.store_file(file_id, file_path, file_info)
+            file_info['file_path'] = stored_path
             uploaded_files[file_id] = file_info
             uploaded_file_infos.append(file_info)
             file_ids.append(file_id)
@@ -385,10 +435,9 @@ def upload_batch_files():
 def process_file(file_id):
     """Process uploaded file using the agent system."""
     try:
-        if file_id not in uploaded_files:
+        file_info = get_file_info_safe(file_id)
+        if file_info is None:
             return jsonify({'error': 'File not found'}), 404
-        
-        file_info = uploaded_files[file_id]
         
         if not AGENT_AVAILABLE or not orchestrator:
             # Return mock response if agent system not available
@@ -619,10 +668,14 @@ def query_data():
         if not query:
             return jsonify({'error': 'Query cannot be empty'}), 400
         
-        if file_id not in uploaded_files:
-            return jsonify({'error': 'File not found'}), 404
-        
-        file_info = uploaded_files[file_id]
+        # Get file info safely with automatic recovery
+        file_info = get_file_info_safe(file_id)
+        if file_info is None:
+            return jsonify({
+                'error': 'File not found',
+                'message': f'File ID {file_id} does not exist or has been cleaned up',
+                'suggestion': 'Please re-upload your file and try again'
+            }), 404
         
         if not AGENT_AVAILABLE or not orchestrator:
             # Return mock response if agent system not available
@@ -689,15 +742,50 @@ def query_data():
                 }
             }), 500
         
-        return jsonify({
+        # Handle different response types from orchestrator
+        response_data = {
             'success': True,
             'query': query,
-            'response': result.get('final_result', 'Analysis completed'),
-            'generated_code': result.get('generated_code', ''),
-            'workflow_steps': result.get('steps', []),
             'execution_time': result.get('execution_time', 0),
             'status': result.get('status', 'completed')
-        })
+        }
+        
+        # Check if this is a non-Excel request response
+        if result.get('response_type') == 'general_llm_response':
+            # Non-Excel request: use 'answer' field and include additional metadata
+            response_data.update({
+                'response': result.get('answer', 'No response generated'),
+                'generated_code': '',  # Non-Excel requests don't generate code
+                'workflow_steps': [],  # Non-Excel requests don't have workflow steps
+                'excel_data_used': result.get('excel_data_used', False),
+                'file_processed': result.get('file_processed', False),
+                'note': result.get('note', ''),
+                'relevance_analysis': result.get('relevance_analysis', {}),
+                'response_type': 'general_llm_response'
+            })
+        else:
+            # Excel request: use existing field mapping
+            response_data.update({
+                'response': result.get('final_result', result.get('user_response', 'Analysis completed')),
+                'generated_code': result.get('generated_code', ''),
+                'workflow_steps': result.get('steps', []),
+                'excel_data_used': result.get('excel_data_used', True),
+                'file_processed': result.get('file_processed', True),
+                'note': result.get('note', ''),
+                'response_type': 'excel_data_processing'
+            })
+            
+            # Include additional Excel workflow data if available
+            if 'user_response' in result:
+                response_data['user_response'] = result['user_response']
+            if 'response_summary' in result:
+                response_data['response_summary'] = result['response_summary']
+            if 'recommendations' in result:
+                response_data['recommendations'] = result['recommendations']
+            if 'technical_details' in result:
+                response_data['technical_details'] = result['technical_details']
+        
+        return jsonify(response_data)
         
     except Exception as e:
         return jsonify({'error': f'Query failed: {str(e)}'}), 500
@@ -1148,9 +1236,32 @@ print(df.dtypes)'''
         }
 
 
+@app.route('/api/files/storage-stats')
+@log_request_response
+def get_storage_stats():
+    """Get file storage statistics."""
+    try:
+        stats = file_manager.get_storage_stats()
+        return jsonify({
+            'success': True,
+            'stats': stats,
+            'memory_cache_count': len(uploaded_files),
+            'persistent_storage_count': stats['file_count']
+        })
+    except Exception as e:
+        return jsonify({'error': f'Failed to get storage stats: {str(e)}'}), 500
+
+
 @app.route('/api/files')
 def list_files():
     """List all uploaded files."""
+    # Ensure we have the latest files from persistent storage
+    try:
+        stored_files = file_manager.list_files()
+        uploaded_files.update(stored_files)
+    except Exception as e:
+        print(f"Warning: Failed to sync files from storage: {e}")
+    
     files = []
     for file_id, file_info in uploaded_files.items():
         files.append({
@@ -1169,17 +1280,16 @@ def list_files():
 def delete_file(file_id):
     """Delete uploaded file."""
     try:
-        if file_id not in uploaded_files:
+        file_info = get_file_info_safe(file_id)
+        if file_info is None:
             return jsonify({'error': 'File not found'}), 404
         
-        file_info = uploaded_files[file_id]
+        # Remove from persistent storage (this also deletes physical files)
+        file_manager.remove_file(file_id)
         
-        # Delete physical file
-        if os.path.exists(file_info['file_path']):
-            os.remove(file_info['file_path'])
-        
-        # Remove from memory
-        del uploaded_files[file_id]
+        # Remove from memory cache
+        if file_id in uploaded_files:
+            del uploaded_files[file_id]
         
         return jsonify({'success': True, 'message': 'File deleted successfully'})
         
@@ -1192,10 +1302,9 @@ def delete_file(file_id):
 def preview_file(file_id):
     """Preview uploaded Excel file as HTML."""
     try:
-        if file_id not in uploaded_files:
+        file_info = get_file_info_safe(file_id)
+        if file_info is None:
             return jsonify({'error': 'File not found'}), 404
-        
-        file_info = uploaded_files[file_id]
         file_path = file_info['file_path']
         
         # Get query parameters
@@ -1240,10 +1349,9 @@ def preview_file(file_id):
 def get_file_sheets(file_id):
     """Get list of sheets in the Excel file."""
     try:
-        if file_id not in uploaded_files:
+        file_info = get_file_info_safe(file_id)
+        if file_info is None:
             return jsonify({'error': 'File not found'}), 404
-        
-        file_info = uploaded_files[file_id]
         file_path = file_info['file_path']
         
         # Get Excel file information
@@ -1273,10 +1381,9 @@ def get_file_sheets(file_id):
 def preview_specific_sheet(file_id, sheet_name):
     """Preview specific sheet of Excel file."""
     try:
-        if file_id not in uploaded_files:
+        file_info = get_file_info_safe(file_id)
+        if file_info is None:
             return jsonify({'error': 'File not found'}), 404
-        
-        file_info = uploaded_files[file_id]
         file_path = file_info['file_path']
         
         # Get range parameters
