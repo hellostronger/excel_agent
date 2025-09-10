@@ -22,7 +22,8 @@ class ColumnProfilingAgent(BaseAgent):
     def __init__(self):
         super().__init__(
             name="ColumnProfilingAgent",
-            description="Analyzes column ranges, infers data types, and computes statistics"
+            description="Analyzes column ranges, infers data types, and computes statistics",
+            mcp_capabilities=["data_analysis", "excel_tools"]
         )
     
     async def process(self, request: AgentRequest) -> AgentResponse:
@@ -50,6 +51,13 @@ class ColumnProfilingAgent(BaseAgent):
                 request.sheet_name,
                 request.column_name
             )
+            
+            # Enhance with MCP data analysis if available
+            enhanced_profiles = await self._enhance_with_mcp_analysis(
+                file_path, request.sheet_name, profiles
+            )
+            if enhanced_profiles:
+                profiles = enhanced_profiles
             
             self.logger.info(
                 f"Column profiling completed for sheet '{request.sheet_name}': "
@@ -329,3 +337,92 @@ class ColumnProfilingAgent(BaseAgent):
             self.logger.warning(f"Error calculating statistics: {e}")
         
         return None
+    
+    async def _enhance_with_mcp_analysis(
+        self, 
+        file_path: Path, 
+        sheet_name: str, 
+        profiles: List[ColumnProfile]
+    ) -> Optional[List[ColumnProfile]]:
+        """Enhance column profiles using MCP data analysis capabilities."""
+        try:
+            # Use MCP to read Excel data for detailed analysis
+            excel_data = await self.call_mcp_tool("read_excel_file", {
+                "file_path": str(file_path),
+                "sheet_name": sheet_name
+            })
+            
+            if not excel_data or excel_data.get("error"):
+                return None
+            
+            # Convert sheet data to DataFrame format for MCP analysis
+            sheet_data = excel_data.get("head", {})
+            if not sheet_data:
+                return None
+            
+            # Perform advanced analysis using MCP
+            analysis_result = await self.call_mcp_tool("analyze_dataset", {
+                "file_path": str(file_path),
+                "sheet_name": sheet_name,
+                "analysis_type": "statistical"
+            })
+            
+            if analysis_result and not analysis_result.get("error"):
+                describe_data = analysis_result.get("describe", {})
+                skewness_data = analysis_result.get("skewness", {})
+                kurtosis_data = analysis_result.get("kurtosis", {})
+                
+                # Detect outliers for numeric columns
+                outlier_result = await self.call_mcp_tool("detect_outliers", {
+                    "data": sheet_data,
+                    "method": "iqr"
+                })
+                
+                outlier_info = {}
+                if outlier_result and not outlier_result.get("error"):
+                    outlier_info = outlier_result.get("outliers", {})
+                
+                # Enhance existing profiles with MCP analysis
+                enhanced_profiles = []
+                for profile in profiles:
+                    enhanced_profile = profile.model_copy()
+                    
+                    # Add enhanced statistics from MCP
+                    if profile.column_name in describe_data:
+                        stats = describe_data[profile.column_name]
+                        enhanced_stats = enhanced_profile.statistics or {}
+                        enhanced_stats.update({
+                            'count': stats.get('count', 0),
+                            'mean': stats.get('mean', 0),
+                            'std': stats.get('std', 0),
+                            'min': stats.get('min', 0),
+                            'max': stats.get('max', 0),
+                            '25%': stats.get('25%', 0),
+                            '50%': stats.get('50%', 0),
+                            '75%': stats.get('75%', 0)
+                        })
+                        
+                        # Add advanced statistical measures
+                        if profile.column_name in skewness_data:
+                            enhanced_stats['skewness'] = skewness_data[profile.column_name]
+                        if profile.column_name in kurtosis_data:
+                            enhanced_stats['kurtosis'] = kurtosis_data[profile.column_name]
+                        
+                        enhanced_profile.statistics = enhanced_stats
+                    
+                    # Add outlier information
+                    if profile.column_name in outlier_info:
+                        outlier_data = outlier_info[profile.column_name]
+                        enhanced_profile.outlier_count = outlier_data.get('count', 0)
+                        enhanced_profile.outlier_ratio = outlier_data['count'] / profile.total_count if profile.total_count > 0 else 0
+                    
+                    enhanced_profiles.append(enhanced_profile)
+                
+                self.logger.info("Enhanced column profiles with MCP data analysis")
+                return enhanced_profiles
+            
+            return None
+            
+        except Exception as e:
+            self.logger.warning(f"MCP analysis enhancement failed: {e}")
+            return None

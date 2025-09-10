@@ -1,0 +1,21 @@
+# Core dependencies for frontend with Flask backend
+pandas>=2.0.0
+openpyxl>=3.1.0
+numpy>=1.24.0
+
+# Web framework
+flask>=2.3.0
+flask-cors>=4.0.0
+werkzeug>=2.3.0
+
+# Data analysis and visualization
+matplotlib>=3.7.0
+seaborn>=0.12.0
+scipy>=1.10.0
+
+# File handling
+pathlib2
+
+# Optional: For enhanced functionality
+# loguru>=0.7.0  # For logging
+# pydantic>=2.0.0  # For data validation

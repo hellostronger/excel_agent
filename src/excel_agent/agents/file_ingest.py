@@ -21,7 +21,8 @@ class FileIngestAgent(BaseAgent):
     def __init__(self):
         super().__init__(
             name="FileIngestAgent",
-            description="Loads and parses Excel files, extracts sheet names and metadata"
+            description="Loads and parses Excel files, extracts sheet names and metadata",
+            mcp_capabilities=["excel_tools", "file_management"]
         )
         self.file_store = {}  # In-memory store for file metadata
     
@@ -61,6 +62,11 @@ class FileIngestAgent(BaseAgent):
             
             # Parse Excel file
             metadata = await self._parse_excel_file(file_path, file_id)
+            
+            # Use MCP tools for enhanced file processing if available
+            mcp_result = await self._enhance_with_mcp(file_path, metadata)
+            if mcp_result:
+                metadata = mcp_result
             
             # Store metadata
             self.file_store[file_id] = metadata
@@ -213,3 +219,46 @@ class FileIngestAgent(BaseAgent):
             del self.file_store[file_id]
             return True
         return False
+    
+    async def _enhance_with_mcp(self, file_path: Path, metadata: FileMetadata) -> Optional[FileMetadata]:
+        """Enhance file metadata using MCP tools."""
+        try:
+            # Use MCP Excel tools for enhanced analysis
+            excel_info = await self.call_mcp_tool("read_excel_file", {
+                "file_path": str(file_path)
+            })
+            
+            if excel_info and not excel_info.get("error"):
+                # Create backup using MCP file management
+                backup_result = await self.call_mcp_tool("create_backup", {
+                    "file_path": str(file_path)
+                })
+                
+                # Enhance metadata with MCP results
+                enhanced_metadata = metadata.model_copy()
+                
+                if excel_info.get("sheets"):
+                    enhanced_metadata.sheets = list(excel_info["sheets"].keys())
+                    
+                    # Add sheet-specific information
+                    total_rows = 0
+                    total_columns = 0
+                    for sheet_info in excel_info["sheets"].values():
+                        if "shape" in sheet_info:
+                            total_rows += sheet_info["shape"][0]
+                            total_columns += sheet_info["shape"][1]
+                    
+                    enhanced_metadata.total_rows = total_rows
+                    enhanced_metadata.total_columns = total_columns
+                
+                # Log backup status
+                if backup_result and not backup_result.get("error"):
+                    self.logger.info(f"Created backup: {backup_result.get('backup_file')}")
+                
+                return enhanced_metadata
+            
+            return None
+            
+        except Exception as e:
+            self.logger.warning(f"MCP enhancement failed: {e}")
+            return None

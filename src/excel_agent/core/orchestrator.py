@@ -19,6 +19,7 @@ from ..models.agents import *
 from ..utils.config import config
 from ..utils.logging import get_logger
 from ..utils.siliconflow_client import SiliconFlowClient
+from ..mcp.agent_configs import initialize_mcp_system, initialize_all_agent_mcp
 
 
 class WorkflowType(str, Enum):
@@ -34,8 +35,13 @@ class Orchestrator(BaseAgent):
     def __init__(self):
         super().__init__(
             name="Orchestrator",
-            description="Main coordinator for all agents, handles intent parsing and workflow orchestration"
+            description="Main coordinator for all agents, handles intent parsing and workflow orchestration",
+            mcp_capabilities=["excel_tools", "data_analysis", "file_management", "visualization"]
         )
+        
+        # Initialize MCP system
+        self.mcp_registry = initialize_mcp_system()
+        self.mcp_initialized = False
         
         # Initialize sub-agents
         self.file_ingest_agent = FileIngestAgent()
@@ -60,6 +66,10 @@ class Orchestrator(BaseAgent):
         context = context or {}
         
         try:
+            # Initialize MCP system if not already done
+            if not self.mcp_initialized:
+                await self._initialize_mcp_system()
+            
             self.logger.info(f"Processing user request: {user_request[:100]}...")
             
             # Parse intent and determine workflow type
@@ -486,3 +496,27 @@ Respond in JSON format:
             request,
             "Orchestrator should be called via process_user_request method"
         )
+    
+    async def _initialize_mcp_system(self):
+        """Initialize the MCP system for all agents."""
+        try:
+            self.logger.info("Initializing MCP system...")
+            await initialize_all_agent_mcp()
+            self.mcp_initialized = True
+            self.logger.info("MCP system initialized successfully")
+        except Exception as e:
+            self.logger.error(f"Failed to initialize MCP system: {e}")
+            # Continue without MCP capabilities
+            self.mcp_initialized = False
+    
+    async def get_mcp_status(self) -> Dict[str, Any]:
+        """Get MCP system status."""
+        if not self.mcp_initialized:
+            return {"status": "not_initialized", "error": "MCP system not initialized"}
+        
+        return {
+            "status": "initialized",
+            "registry_status": self.mcp_registry.get_registry_status(),
+            "available_tools": self.mcp_registry.list_available_tools(),
+            "agent_configs": len(self.mcp_registry.agent_configs)
+        }

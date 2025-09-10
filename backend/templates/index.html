@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel智能分析系统 - API版本</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .system-status {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .status-item {
+            display: inline-block;
+            margin: 0 15px;
+            font-size: 14px;
+        }
+
+        .status-ok { color: #4CAF50; }
+        .status-warning { color: #FF9800; }
+        .status-error { color: #F44336; }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+            min-height: 600px;
+        }
+
+        .upload-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 30px;
+            border: 2px dashed #dee2e6;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section.dragover {
+            border-color: #4CAF50;
+            background: #e8f5e9;
+        }
+
+        .upload-zone {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .upload-icon {
+            font-size: 3em;
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        .upload-btn:hover {
+            background: #45a049;
+        }
+
+        .upload-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .file-info {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .file-info.show {
+            display: block;
+        }
+
+        .query-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 30px;
+        }
+
+        .query-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .query-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .query-btn {
+            background: #2196F3;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background 0.3s;
+        }
+
+        .query-btn:hover {
+            background: #1976D2;
+        }
+
+        .query-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .response-section {
+            grid-column: 1 / -1;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 30px;
+            margin-top: 30px;
+            min-height: 300px;
+        }
+
+        .response-content {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            border-left: 4px solid #4CAF50;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4CAF50;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #f44336;
+            margin: 10px 0;
+        }
+
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #4caf50;
+            margin: 10px 0;
+        }
+
+        .warning {
+            background: #fff3e0;
+            color: #ef6c00;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #ff9800;
+            margin: 10px 0;
+        }
+
+        .sample-queries {
+            margin-top: 20px;
+        }
+
+        .sample-query {
+            background: white;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            border: 1px solid #dee2e6;
+        }
+
+        .sample-query:hover {
+            background: #e3f2fd;
+        }
+
+        .workflow-status {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 4px solid #2196F3;
+        }
+
+        .workflow-step {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+
+        .step-status {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .step-pending { background: #ccc; }
+        .step-running { background: #ff9800; }
+        .step-completed { background: #4caf50; }
+        .step-error { background: #f44336; }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #dee2e6;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 16px;
+            color: #6c757d;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #4CAF50;
+            border-bottom: 2px solid #4CAF50;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .mock-mode-banner {
+            background: #fff3e0;
+            color: #e65100;
+            padding: 10px 20px;
+            text-align: center;
+            border-left: 4px solid #ff9800;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Excel智能分析系统</h1>
+            <p>基于AI的Excel数据分析和智能问答系统</p>
+            
+            <div class="system-status" id="systemStatus">
+                <div class="status-item">🔄 正在检查系统状态...</div>
+            </div>
+        </div>
+
+        <div id="mockModeBanner" class="mock-mode-banner" style="display: none;">
+            ⚠️ 系统运行在演示模式下 - 分析结果为模拟数据，仅用于界面演示
+        </div>
+
+        <div class="main-content">
+            <!-- 文件上传区域 -->
+            <div class="upload-section" id="uploadSection">
+                <div class="upload-zone">
+                    <div class="upload-icon">📁</div>
+                    <h3>上传Excel文件</h3>
+                    <p>拖拽文件到这里或点击选择文件</p>
+                    <p style="color: #6c757d; font-size: 14px; margin-top: 10px;">
+                        支持格式: .xlsx, .xls, .xlsm (最大50MB)
+                    </p>
+                </div>
+                
+                <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls,.xlsm">
+                <button class="upload-btn" id="uploadBtn" onclick="document.getElementById('fileInput').click()">
+                    选择文件
+                </button>
+
+                <div class="file-info" id="fileInfo">
+                    <h4>📋 文件信息</h4>
+                    <div id="fileDetails"></div>
+                </div>
+
+                <div class="workflow-status" id="workflowStatus" style="display: none;">
+                    <h4>🔄 处理状态</h4>
+                    <div id="workflowSteps"></div>
+                </div>
+            </div>
+
+            <!-- 查询区域 -->
+            <div class="query-section">
+                <h3>💬 智能问答</h3>
+                <textarea 
+                    class="query-input" 
+                    id="queryInput" 
+                    placeholder="请输入你想了解的问题，例如：&#10;• 这个表格有多少行数据？&#10;• 销售额最高的月份是哪个？&#10;• 帮我分析一下产品类别的分布情况&#10;• 找出异常值或离群点"
+                    disabled
+                ></textarea>
+                
+                <button class="query-btn" id="queryBtn" onclick="submitQuery()" disabled>
+                    🚀 开始分析
+                </button>
+
+                <div class="sample-queries">
+                    <h4>💡 示例问题</h4>
+                    <div class="sample-query" onclick="setQuery('请帮我分析这个表格的基本统计信息')">
+                        📈 请帮我分析这个表格的基本统计信息
+                    </div>
+                    <div class="sample-query" onclick="setQuery('找出数据中的异常值和离群点')">
+                        🔍 找出数据中的异常值和离群点
+                    </div>
+                    <div class="sample-query" onclick="setQuery('各个数值列之间有什么关联关系？')">
+                        🔗 各个数值列之间有什么关联关系？
+                    </div>
+                    <div class="sample-query" onclick="setQuery('生成一个数据可视化图表')">
+                        📊 生成一个数据可视化图表
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 响应区域 -->
+        <div class="response-section">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('response')">📋 分析结果</button>
+                <button class="tab" onclick="switchTab('data')">📊 数据预览</button>
+                <button class="tab" onclick="switchTab('code')">💻 生成代码</button>
+            </div>
+
+            <div id="responseTab" class="tab-content active">
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>AI正在分析中，请稍候...</p>
+                </div>
+                <div class="response-content" id="responseContent">
+                    👋 欢迎使用Excel智能分析系统！
+                    
+请按以下步骤开始：
+1. 上传您的Excel文件
+2. 等待文件处理完成
+3. 在右侧输入您的问题
+4. 点击"开始分析"获得AI回复
+
+系统支持：
+• 📊 数据统计分析
+• 🔍 异常值检测
+• 📈 趋势分析
+• 📋 数据清洗建议
+• 🎨 可视化图表生成
+
+系统状态正在检查中...
+                </div>
+            </div>
+
+            <div id="dataTab" class="tab-content">
+                <div id="dataPreview">
+                    <p>上传文件后将显示数据预览...</p>
+                </div>
+            </div>
+
+            <div id="codeTab" class="tab-content">
+                <div id="generatedCode">
+                    <p>分析完成后将显示生成的Python代码...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let uploadedFile = null;
+        let currentFileId = null;
+        let systemStatus = null;
+        let mockMode = false;
+
+        // API base URL
+        const API_BASE = '/api';
+
+        // Initialize system
+        document.addEventListener('DOMContentLoaded', () => {
+            checkSystemStatus();
+        });
+
+        // Check system status
+        async function checkSystemStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/status`);
+                systemStatus = await response.json();
+                
+                updateSystemStatus();
+                
+                if (!systemStatus.agent_available) {
+                    mockMode = true;
+                    document.getElementById('mockModeBanner').style.display = 'block';
+                }
+                
+            } catch (error) {
+                console.error('Failed to check system status:', error);
+                showError('无法连接到后端服务器');
+            }
+        }
+
+        function updateSystemStatus() {
+            const statusDiv = document.getElementById('systemStatus');
+            
+            let statusItems = [];
+            
+            statusItems.push(`<span class="${systemStatus.agent_available ? 'status-ok' : 'status-warning'}">
+                ${systemStatus.agent_available ? '✅' : '⚠️'} Agent系统: ${systemStatus.agent_available ? '正常' : '演示模式'}
+            </span>`);
+            
+            statusItems.push(`<span class="${systemStatus.mcp_initialized ? 'status-ok' : 'status-warning'}">
+                ${systemStatus.mcp_initialized ? '✅' : '⚠️'} MCP: ${systemStatus.mcp_initialized ? '已初始化' : '未初始化'}
+            </span>`);
+            
+            statusItems.push(`<span class="${systemStatus.orchestrator_ready ? 'status-ok' : 'status-warning'}">
+                ${systemStatus.orchestrator_ready ? '✅' : '⚠️'} 协调器: ${systemStatus.orchestrator_ready ? '就绪' : '未就绪'}
+            </span>`);
+            
+            statusDiv.innerHTML = statusItems.join('');
+        }
+
+        // File upload handling
+        const uploadSection = document.getElementById('uploadSection');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileDetails = document.getElementById('fileDetails');
+        const queryInput = document.getElementById('queryInput');
+        const queryBtn = document.getElementById('queryBtn');
+        const uploadBtn = document.getElementById('uploadBtn');
+
+        // Drag and drop
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+
+        uploadSection.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+        });
+
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        async function handleFile(file) {
+            // Validate file
+            const allowedTypes = ['.xlsx', '.xls', '.xlsm'];
+            const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+            
+            if (!allowedTypes.includes(fileExtension)) {
+                showError('请上传Excel文件 (.xlsx, .xls, .xlsm)');
+                return;
+            }
+
+            if (file.size > 50 * 1024 * 1024) {
+                showError('文件大小不能超过50MB');
+                return;
+            }
+
+            uploadedFile = file;
+            displayFileInfo(file);
+            await uploadFile(file);
+        }
+
+        function displayFileInfo(file) {
+            const sizeInMB = (file.size / 1024 / 1024).toFixed(2);
+            fileDetails.innerHTML = `
+                <p><strong>文件名:</strong> ${file.name}</p>
+                <p><strong>大小:</strong> ${sizeInMB} MB</p>
+                <p><strong>类型:</strong> ${file.type}</p>
+                <p><strong>最后修改:</strong> ${new Date(file.lastModified).toLocaleString()}</p>
+            `;
+            fileInfo.classList.add('show');
+        }
+
+        async function uploadFile(file) {
+            const workflowStatus = document.getElementById('workflowStatus');
+            const workflowSteps = document.getElementById('workflowSteps');
+            
+            uploadBtn.disabled = true;
+            workflowStatus.style.display = 'block';
+            
+            const steps = [
+                { id: 'upload', name: '📤 文件上传' },
+                { id: 'ingest', name: '📊 文件解析' },
+                { id: 'profile', name: '🔍 数据分析' },
+                { id: 'ready', name: '✅ 准备就绪' }
+            ];
+
+            workflowSteps.innerHTML = steps.map(step => 
+                `<div class="workflow-step">
+                    <div class="step-status step-pending" id="status-${step.id}"></div>
+                    <span>${step.name}</span>
+                </div>`
+            ).join('');
+
+            try {
+                // Upload file
+                setStepStatus('upload', 'running');
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const uploadResponse = await fetch(`${API_BASE}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!uploadResponse.ok) {
+                    const error = await uploadResponse.json();
+                    throw new Error(error.error || 'Upload failed');
+                }
+
+                const uploadResult = await uploadResponse.json();
+                currentFileId = uploadResult.file_id;
+                setStepStatus('upload', 'completed');
+
+                // Process file
+                setStepStatus('ingest', 'running');
+                const processResponse = await fetch(`${API_BASE}/process/${currentFileId}`, {
+                    method: 'POST'
+                });
+
+                if (!processResponse.ok) {
+                    const error = await processResponse.json();
+                    throw new Error(error.error || 'Processing failed');
+                }
+
+                const processResult = await processResponse.json();
+                setStepStatus('ingest', 'completed');
+                setStepStatus('profile', 'running');
+                
+                // Simulate processing steps
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                setStepStatus('profile', 'completed');
+                setStepStatus('ready', 'running');
+                await new Promise(resolve => setTimeout(resolve, 500));
+                setStepStatus('ready', 'completed');
+
+                // Enable query interface
+                queryInput.disabled = false;
+                queryBtn.disabled = false;
+                
+                if (processResult.mock_mode) {
+                    showWarning('文件处理完成！系统运行在演示模式下，分析结果为模拟数据。');
+                } else {
+                    showSuccess('文件处理完成！现在可以开始提问了。');
+                }
+                
+                // Display data preview
+                if (processResult.preview) {
+                    displayDataPreview(processResult.preview, processResult.metadata);
+                }
+                
+            } catch (error) {
+                showError('文件处理失败: ' + error.message);
+                setStepStatus('upload', 'error');
+            } finally {
+                uploadBtn.disabled = false;
+            }
+        }
+
+        function setStepStatus(stepId, status) {
+            const element = document.getElementById(`status-${stepId}`);
+            if (element) {
+                element.className = `step-status step-${status}`;
+            }
+        }
+
+        function displayDataPreview(preview, metadata) {
+            const dataPreview = document.getElementById('dataPreview');
+            
+            if (!preview || !preview.columns) {
+                dataPreview.innerHTML = '<p>无法生成数据预览</p>';
+                return;
+            }
+            
+            let tableHTML = `
+                <div style="background: white; padding: 15px; border-radius: 8px;">
+                    <h4>📊 数据预览 - ${uploadedFile.name}</h4>
+                    <div style="overflow-x: auto; margin-top: 15px;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: #f5f5f5;">
+            `;
+            
+            // Add column headers
+            preview.columns.forEach(col => {
+                tableHTML += `<th style="padding: 10px; border: 1px solid #ddd;">${col}</th>`;
+            });
+            
+            tableHTML += `
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+            
+            // Add sample data rows
+            if (preview.sample_data) {
+                preview.sample_data.forEach(row => {
+                    tableHTML += '<tr>';
+                    row.forEach(cell => {
+                        tableHTML += `<td style="padding: 10px; border: 1px solid #ddd;">${cell}</td>`;
+                    });
+                    tableHTML += '</tr>';
+                });
+            }
+            
+            tableHTML += `
+                            </tbody>
+                        </table>
+                    </div>
+                    <p style="margin-top: 15px; color: #6c757d;">
+                        <strong>数据概览:</strong> 
+                        共${metadata.total_rows || 'N/A'}行数据，${metadata.total_columns || 'N/A'}个字段
+                    </p>
+                </div>
+            `;
+            
+            dataPreview.innerHTML = tableHTML;
+        }
+
+        async function submitQuery() {
+            const query = queryInput.value.trim();
+            if (!query) {
+                showError('请输入您的问题');
+                return;
+            }
+
+            if (!currentFileId) {
+                showError('请先上传并处理Excel文件');
+                return;
+            }
+
+            const loading = document.getElementById('loading');
+            const responseContent = document.getElementById('responseContent');
+            
+            loading.classList.add('show');
+            responseContent.style.display = 'none';
+            queryBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE}/query`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        file_id: currentFileId,
+                        query: query
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Query failed');
+                }
+
+                const result = await response.json();
+                
+                loading.classList.remove('show');
+                responseContent.style.display = 'block';
+                responseContent.textContent = result.response;
+
+                // Display generated code
+                if (result.generated_code) {
+                    document.getElementById('generatedCode').innerHTML = `
+                        <div style="background: white; padding: 15px; border-radius: 8px;">
+                            <h4>💻 生成的Python代码</h4>
+                            ${result.mock_mode ? '<div class="warning">⚠️ 演示模式 - 代码仅供参考</div>' : ''}
+                            <pre style="background: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto;"><code>${result.generated_code}</code></pre>
+                        </div>
+                    `;
+                }
+
+                queryBtn.disabled = false;
+                
+            } catch (error) {
+                loading.classList.remove('show');
+                showError('分析失败: ' + error.message);
+                queryBtn.disabled = false;
+            }
+        }
+
+        function setQuery(query) {
+            document.getElementById('queryInput').value = query;
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function showError(message) {
+            const responseContent = document.getElementById('responseContent');
+            responseContent.innerHTML = `<div class="error">❌ ${message}</div>`;
+            responseContent.style.display = 'block';
+        }
+
+        function showSuccess(message) {
+            const responseContent = document.getElementById('responseContent');
+            responseContent.innerHTML = `<div class="success">✅ ${message}</div>`;
+            responseContent.style.display = 'block';
+        }
+
+        function showWarning(message) {
+            const responseContent = document.getElementById('responseContent');
+            responseContent.innerHTML = `<div class="warning">⚠️ ${message}</div>`;
+            responseContent.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
