@@ -195,6 +195,7 @@ logs/
 sandbox/
 output/
 results/
+backend/file_storage/
 
 # AI model cache
 .cache/

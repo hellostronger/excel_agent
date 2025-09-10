@@ -193,12 +193,35 @@ Respond in JSON format:
 }}
 """
         
+        import time
+        from ..utils.logging import get_logger
+        
+        logger = get_logger(__name__)
+        request_id = context.get('request_id', 'orchestrator_intent')
+        
+        # Log request start
+        start_time = time.time()
+        logger.info(f"🤖 [Orchestrator] Starting intent analysis LLM request {request_id}")
+        
         async with SiliconFlowClient() as client:
-            response = await client.chat_completion(
-                messages=[{"role": "user", "content": intent_prompt}],
-                temperature=0.3,
-                request_id=context.get('request_id', 'orchestrator')
-            )
+            try:
+                response = await client.chat_completion(
+                    messages=[{"role": "user", "content": intent_prompt}],
+                    temperature=0.3,
+                    request_id=request_id
+                )
+                
+                # Log successful completion
+                end_time = time.time()
+                duration = end_time - start_time
+                logger.info(f"🤖 [Orchestrator] Intent analysis LLM request {request_id} completed in {duration:.2f}s")
+                
+            except Exception as e:
+                # Log error
+                end_time = time.time()
+                duration = end_time - start_time
+                logger.error(f"❌ [Orchestrator] Intent analysis LLM request {request_id} failed after {duration:.2f}s: {type(e).__name__}: {e}")
+                raise
         
         # Parse the response
         try:
@@ -512,12 +535,31 @@ Examples:
 """
         
         try:
+            # Log request start
+            logger = get_logger(__name__)
+            request_id = context.get('request_id', 'relevance_check') if context else 'relevance_check'
+            start_time = time.time()
+            logger.info(f"🤖 [Orchestrator] Starting relevance check LLM request {request_id}")
+            
             async with SiliconFlowClient() as client:
-                response = await client.chat_completion(
-                    messages=[{"role": "user", "content": relevance_prompt}],
-                    temperature=0.2,
-                    request_id=context.get('request_id', 'relevance_check') if context else 'relevance_check'
-                )
+                try:
+                    response = await client.chat_completion(
+                        messages=[{"role": "user", "content": relevance_prompt}],
+                        temperature=0.2,
+                        request_id=request_id
+                    )
+                    
+                    # Log successful completion
+                    end_time = time.time()
+                    duration = end_time - start_time
+                    logger.info(f"🤖 [Orchestrator] Relevance check LLM request {request_id} completed in {duration:.2f}s")
+                    
+                except Exception as e:
+                    # Log error
+                    end_time = time.time()
+                    duration = end_time - start_time
+                    logger.error(f"❌ [Orchestrator] Relevance check LLM request {request_id} failed after {duration:.2f}s: {type(e).__name__}: {e}")
+                    raise
             
             # Parse the response
             relevance_text = response['choices'][0]['message']['content']
@@ -581,12 +623,29 @@ Please provide a helpful, accurate, and informative response to their question. 
 Important: This response will be marked as not using any Excel data or file processing capabilities.
 """
             
+            # Log request start
+            llm_start_time = time.time()
+            logger.info(f"🤖 [Orchestrator] Starting general response LLM request {request_id}")
+            
             async with SiliconFlowClient() as client:
-                response = await client.chat_completion(
-                    messages=[{"role": "user", "content": general_prompt}],
-                    temperature=0.7,
-                    request_id=request_id
-                )
+                try:
+                    response = await client.chat_completion(
+                        messages=[{"role": "user", "content": general_prompt}],
+                        temperature=0.7,
+                        request_id=request_id
+                    )
+                    
+                    # Log successful completion
+                    llm_end_time = time.time()
+                    duration = llm_end_time - llm_start_time
+                    logger.info(f"🤖 [Orchestrator] General response LLM request {request_id} completed in {duration:.2f}s")
+                    
+                except Exception as e:
+                    # Log error
+                    llm_end_time = time.time()
+                    duration = llm_end_time - llm_start_time
+                    logger.error(f"❌ [Orchestrator] General response LLM request {request_id} failed after {duration:.2f}s: {type(e).__name__}: {e}")
+                    raise
             
             llm_response = response['choices'][0]['message']['content']
             
@@ -629,20 +688,22 @@ Important: This response will be marked as not using any Excel data or file proc
         self,
         user_request: str,
         file_path: str,
-        intent_result: Dict[str, Any]
+        intent_result: Dict[str, Any],
+        request_id: str
     ) -> Dict[str, Any]:
         """Execute single-cell workflow: File Ingest → Profiling → Code Generation (filters) → Execution."""
         
         # Similar to single table but with cell-specific processing
         # For now, delegate to single table workflow with cell-specific context
         intent_result['operation_focus'] = 'cell_specific'
-        return await self._execute_single_table_workflow(user_request, file_path, intent_result)
+        return await self._execute_single_table_workflow(user_request, file_path, intent_result, request_id)
     
     async def _execute_multi_table_workflow(
         self,
         user_request: str,
         file_path: str,
-        intent_result: Dict[str, Any]
+        intent_result: Dict[str, Any],
+        request_id: str
     ) -> Dict[str, Any]:
         """Execute multi-table workflow: File Ingest → Multi-table Profiling → Relation Discovery → Code Generation → Execution."""
         

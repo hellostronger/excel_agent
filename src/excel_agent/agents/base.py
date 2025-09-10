@@ -111,18 +111,51 @@ class BaseAgent(ABC):
         self, 
         messages: list,
         temperature: float = 0.7,
-        max_tokens: Optional[int] = None
+        max_tokens: Optional[int] = None,
+        request_id: Optional[str] = None
     ) -> Dict[str, Any]:
         """Helper method for LLM completions."""
         if not self.siliconflow_client:
             raise RuntimeError("SiliconFlow client not initialized. Use async context manager.")
         
-        return await self.siliconflow_client.chat_completion(
-            messages=messages,
-            model=self.model,
-            temperature=temperature,
-            max_tokens=max_tokens
-        )
+        import time
+        import uuid
+        from ..utils.logging import get_logger
+        
+        logger = get_logger(__name__)
+        
+        # Generate request ID for tracking
+        if request_id is None:
+            request_id = f"{self.__class__.__name__}_{str(uuid.uuid4())[:8]}"
+        
+        # Log request start
+        start_time = time.time()
+        logger.info(f"🤖 [Agent {self.__class__.__name__}] Starting LLM request {request_id}")
+        logger.info(f"🤖 [Agent {self.__class__.__name__}] Model: {self.model}, Temperature: {temperature}, Max Tokens: {max_tokens}")
+        logger.info(f"🤖 [Agent {self.__class__.__name__}] Messages Count: {len(messages)}")
+        
+        try:
+            result = await self.siliconflow_client.chat_completion(
+                messages=messages,
+                model=self.model,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                request_id=request_id
+            )
+            
+            # Log successful completion
+            end_time = time.time()
+            duration = end_time - start_time
+            logger.info(f"🤖 [Agent {self.__class__.__name__}] LLM request {request_id} completed successfully in {duration:.2f}s")
+            
+            return result
+            
+        except Exception as e:
+            # Log error
+            end_time = time.time()
+            duration = end_time - start_time
+            logger.error(f"❌ [Agent {self.__class__.__name__}] LLM request {request_id} failed after {duration:.2f}s: {type(e).__name__}: {e}")
+            raise
     
     async def get_embeddings(self, texts: list) -> list:
         """Helper method for getting embeddings."""

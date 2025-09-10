@@ -330,6 +330,56 @@ All agents use standardized `AgentRequest` and `AgentResponse` models with:
 - Comprehensive error logging  
 - Type-safe data structures
 
+## 🚧 TODO List / 待办事项
+
+### System Improvements / 系统改进
+
+#### Performance & Optimization / 性能与优化
+- [ ] **Solve current performance issues - processing time is too long**  
+      解决当前性能问题 - 处理耗时过长
+
+- [ ] **Optimize and shorten current prompts to improve response efficiency**  
+      优化当前提示词，缩短过长的prompt以提高响应效率
+
+#### AI Model Integration / AI模型集成
+- [ ] **Implement lightweight intent recognition using BERT or similar models**  
+      实现使用BERT等轻量化模型的意图识别功能
+
+- [ ] **Evaluate and improve multimodal processing effectiveness**  
+      评估和改进多模态处理效果
+
+#### System Architecture / 系统架构
+- [ ] **Design and implement metadata management system**  
+      设计和实现元数据管理系统
+
+- [ ] **Implement response problem solution routing mechanism**  
+      实现响应问题解决方案路由机制
+
+- [ ] **Implement reference routing system**  
+      实现引用路由系统
+
+#### Document Management / 文档管理
+- [ ] **Implement multimodal document management system**  
+      实现多模态文档管理系统
+
+- [ ] **Design multi-format file management for original and processed documents (including merged cell recovery)**  
+      设计原样和加工文档的多种格式文件管理（包括恢复合并单元格）
+
+#### Testing & Validation / 测试与验证
+- [ ] **Search and create test datasets for system validation**  
+      寻找和创建测试集用于系统验证
+
+### Priority Level / 优先级
+🔴 **High Priority / 高优先级**: Performance optimization, Intent recognition  
+🟡 **Medium Priority / 中优先级**: Metadata management, Document management  
+🟢 **Low Priority / 低优先级**: Test datasets, Reference routing
+
+### Completion Tracking / 完成追踪
+- **Total Tasks / 总任务数**: 10
+- **Completed / 已完成**: 0
+- **In Progress / 进行中**: 0  
+- **Pending / 待开始**: 10
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

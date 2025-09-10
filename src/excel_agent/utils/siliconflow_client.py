@@ -199,16 +199,22 @@ class SiliconFlowClient:
     async def get_embeddings(
         self,
         texts: List[str],
-        model: Optional[str] = None
+        model: Optional[str] = None,
+        request_id: Optional[str] = None
     ) -> List[List[float]]:
         """Get text embeddings from SiliconFlow API."""
         model = model or config.embedding_model
         
-        logger.info(f"🔤 [Embeddings Request] Model: {model}, Texts: {len(texts)}")
+        # Generate request ID for tracking
+        if request_id is None:
+            request_id = f"embeddings_{str(uuid.uuid4())[:8]}"
+        
+        logger.info(f"🔤 [Embeddings Request {request_id}] ===== STARTING EMBEDDINGS REQUEST =====")
+        logger.info(f"🔤 [Embeddings Request {request_id}] Model: {model}, Texts: {len(texts)}")
         
         # Log all texts for debugging (complete content)
         for i, text in enumerate(texts):
-            logger.debug(f"🔤 [Embeddings Input] Text {i+1} ({len(text)} chars): {text}")
+            logger.debug(f"🔤 [Embeddings Input {request_id}] Text {i+1} ({len(text)} chars): {text}")
         
         try:
             start_time = asyncio.get_event_loop().time()
@@ -227,32 +233,44 @@ class SiliconFlowClient:
             
             # Log response details
             response_time = end_time - start_time
-            logger.info(f"🔤 [Embeddings Response] Time: {response_time:.2f}s")
+            logger.info(f"🔤 [Embeddings Response {request_id}] Time: {response_time:.2f}s, Status: {response.status_code}")
             
             embeddings = [item["embedding"] for item in result["data"]]
-            logger.info(f"🔤 [Embeddings Response] Generated {len(embeddings)} embeddings, dimension: {len(embeddings[0]) if embeddings else 0}")
+            logger.info(f"🔤 [Embeddings Response {request_id}] Generated {len(embeddings)} embeddings, dimension: {len(embeddings[0]) if embeddings else 0}")
             
             if 'usage' in result:
                 usage = result['usage']
-                logger.info(f"🔤 [Embeddings Usage] Total tokens: {usage.get('total_tokens', 'N/A')}")
+                logger.info(f"🔤 [Embeddings Usage {request_id}] Total tokens: {usage.get('total_tokens', 'N/A')}")
+            
+            logger.info(f"🔤 [Embeddings Response {request_id}] ===== COMPLETED EMBEDDINGS REQUEST =====")
             
             return embeddings
         
         except httpx.HTTPStatusError as e:
-            logger.error(f"❌ [Embeddings Error] HTTP {e.response.status_code}: {e.response.text}")
+            end_time = asyncio.get_event_loop().time()
+            response_time = end_time - start_time
+            error_detail = e.response.text if hasattr(e.response, 'text') else 'No error detail'
+            logger.error(f"❌ [Embeddings Error {request_id}] HTTP {e.response.status_code} after {response_time:.2f}s: {error_detail}")
             raise
         except Exception as e:
-            logger.error(f"❌ [Embeddings Error] Request failed: {e}")
+            end_time = asyncio.get_event_loop().time()
+            response_time = end_time - start_time
+            logger.error(f"❌ [Embeddings Error {request_id}] Request failed after {response_time:.2f}s: {type(e).__name__}: {e}")
             raise
     
     async def multimodal_understanding(
         self,
         text: str,
         image_url: Optional[str] = None,
-        model: Optional[str] = None
+        model: Optional[str] = None,
+        request_id: Optional[str] = None
     ) -> Dict[str, Any]:
         """Perform multimodal understanding using GLM-4.1V model."""
         model = model or config.multimodal_model
+        
+        # Generate request ID for tracking
+        if request_id is None:
+            request_id = f"multimodal_{str(uuid.uuid4())[:8]}"
         
         messages = [
             {
@@ -267,13 +285,32 @@ class SiliconFlowClient:
                 {"type": "image_url", "image_url": {"url": image_url}}
             ]
         
-        logger.info(f"Performing multimodal understanding with model: {model}")
+        # Log request start
+        start_time = asyncio.get_event_loop().time()
+        logger.info(f"🤖 [Multimodal] Starting multimodal understanding request {request_id}")
+        logger.info(f"🤖 [Multimodal] Model: {model}, Has Image: {bool(image_url)}")
         
-        return await self.chat_completion(
-            messages=messages,
-            model=model,
-            temperature=0.3
-        )
+        try:
+            result = await self.chat_completion(
+                messages=messages,
+                model=model,
+                temperature=0.3,
+                request_id=request_id
+            )
+            
+            # Log successful completion
+            end_time = asyncio.get_event_loop().time()
+            duration = end_time - start_time
+            logger.info(f"🤖 [Multimodal] Multimodal understanding request {request_id} completed in {duration:.2f}s")
+            
+            return result
+            
+        except Exception as e:
+            # Log error
+            end_time = asyncio.get_event_loop().time()
+            duration = end_time - start_time
+            logger.error(f"❌ [Multimodal] Multimodal understanding request {request_id} failed after {duration:.2f}s: {type(e).__name__}: {e}")
+            raise
     
     async def generate_image(
         self,
@@ -310,13 +347,32 @@ class SiliconFlowClient:
     
     async def health_check(self) -> bool:
         """Check if the SiliconFlow API is accessible."""
+        import uuid
+        
+        request_id = f"health_check_{str(uuid.uuid4())[:8]}"
+        start_time = asyncio.get_event_loop().time()
+        logger.info(f"🤖 [HealthCheck] Starting health check request {request_id}")
+        
         try:
             response = await self.chat_completion(
                 messages=[{"role": "user", "content": "Hello"}],
                 model=config.llm_model,
-                max_tokens=10
+                max_tokens=10,
+                request_id=request_id
             )
-            return "choices" in response and len(response["choices"]) > 0
+            
+            end_time = asyncio.get_event_loop().time()
+            duration = end_time - start_time
+            
+            result = "choices" in response and len(response["choices"]) > 0
+            if result:
+                logger.info(f"🤖 [HealthCheck] Health check request {request_id} completed successfully in {duration:.2f}s")
+            else:
+                logger.warning(f"⚠️ [HealthCheck] Health check request {request_id} completed but response invalid in {duration:.2f}s")
+            
+            return result
         except Exception as e:
-            logger.error(f"Health check failed: {e}")
+            end_time = asyncio.get_event_loop().time()
+            duration = end_time - start_time
+            logger.error(f"❌ [HealthCheck] Health check request {request_id} failed after {duration:.2f}s: {type(e).__name__}: {e}")
             return False

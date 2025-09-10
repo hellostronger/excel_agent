@@ -124,12 +124,35 @@ class ResponseGenerationAgent(BaseAgent):
 """
 
         try:
+            import time
+            from ..utils.logging import get_logger
+            
+            logger = get_logger(__name__)
+            request_id = context.get('request_id', 'response_generation')
+            
+            # Log request start
+            start_time = time.time()
+            logger.info(f"🤖 [ResponseGeneration] Starting LLM request {request_id}")
+            
             async with SiliconFlowClient() as client:
-                response = await client.chat_completion(
-                    messages=[{"role": "user", "content": response_prompt}],
-                    temperature=0.7,
-                    request_id=context.get('request_id', 'response_generation')
-                )
+                try:
+                    response = await client.chat_completion(
+                        messages=[{"role": "user", "content": response_prompt}],
+                        temperature=0.7,
+                        request_id=request_id
+                    )
+                    
+                    # Log successful completion
+                    end_time = time.time()
+                    duration = end_time - start_time
+                    logger.info(f"🤖 [ResponseGeneration] LLM request {request_id} completed in {duration:.2f}s")
+                    
+                except Exception as e:
+                    # Log error
+                    end_time = time.time()
+                    duration = end_time - start_time
+                    logger.error(f"❌ [ResponseGeneration] LLM request {request_id} failed after {duration:.2f}s: {type(e).__name__}: {e}")
+                    raise
             
             # Parse the response
             response_text = response['choices'][0]['message']['content']
