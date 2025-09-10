@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import uuid
 from typing import Any, Dict, List, Optional, Union, AsyncGenerator
 import httpx
 from pydantic import BaseModel
@@ -72,12 +73,27 @@ class SiliconFlowClient:
         self,
         messages: List[Dict[str, str]],
         model: Optional[str] = None,
-        temperature: float = 0.7,
+        temperature: Optional[float] = None,
         max_tokens: Optional[int] = None,
-        stream: bool = False
+        top_p: Optional[float] = None,
+        frequency_penalty: Optional[float] = None,
+        presence_penalty: Optional[float] = None,
+        stream: Optional[bool] = None,
+        request_id: Optional[str] = None
     ) -> Union[Dict[str, Any], AsyncGenerator[Dict[str, Any], None]]:
         """Send chat completion request to SiliconFlow API."""
+        # Generate request ID for tracking
+        if request_id is None:
+            request_id = str(uuid.uuid4())[:8]
+        
+        # Use config defaults if parameters not provided
         model = model or config.llm_model
+        temperature = temperature if temperature is not None else config.llm_temperature
+        max_tokens = max_tokens if max_tokens is not None else config.llm_max_tokens
+        top_p = top_p if top_p is not None else config.llm_top_p
+        frequency_penalty = frequency_penalty if frequency_penalty is not None else config.llm_frequency_penalty
+        presence_penalty = presence_penalty if presence_penalty is not None else config.llm_presence_penalty
+        stream = stream if stream is not None else config.llm_stream
         
         request = SiliconFlowRequest(
             model=model,
@@ -87,24 +103,72 @@ class SiliconFlowClient:
             stream=stream
         )
         
-        logger.info(f"Sending chat completion request to model: {model}")
+        # Log detailed request information with request ID
+        logger.info(f"🤖 [LLM Request {request_id}] ===== STARTING LLM REQUEST =====")
+        logger.info(f"🤖 [LLM Request {request_id}] Model: {model}")
+        logger.info(f"🤖 [LLM Request {request_id}] Temperature: {temperature}, Max Tokens: {max_tokens}")
+        logger.info(f"🤖 [LLM Request {request_id}] Stream: {stream}, Top-P: {top_p}")
+        logger.info(f"🤖 [LLM Request {request_id}] Frequency Penalty: {frequency_penalty}, Presence Penalty: {presence_penalty}")
+        logger.info(f"🤖 [LLM Request {request_id}] Messages Count: {len(messages)}")
+        
+        # Log input messages (complete content, no truncation)
+        for i, msg in enumerate(messages):
+            content = msg.get('content', '')
+            role = msg.get('role', 'unknown')
+            
+            logger.info(f"🤖 [LLM Request {request_id}] Input Message {i+1} [{role}] ({len(content)} chars):")
+            logger.info(f"🤖 [LLM Request {request_id}] {content}")
+            logger.info(f"🤖 [LLM Request {request_id}] --- End Message {i+1} ---")
         
         try:
             if stream:
+                logger.info("🤖 [LLM] Using streaming response")
                 return self._stream_completion(request)
             else:
+                start_time = asyncio.get_event_loop().time()
+                
                 response = await self.client.post(
                     "/chat/completions",
                     json=request.model_dump()
                 )
                 response.raise_for_status()
-                return response.json()
+                
+                end_time = asyncio.get_event_loop().time()
+                response_data = response.json()
+                
+                # Log response details
+                response_time = end_time - start_time
+                logger.info(f"🤖 [LLM Response] Time: {response_time:.2f}s, Status: {response.status_code}")
+                
+                if 'usage' in response_data:
+                    usage = response_data['usage']
+                    logger.info(f"🤖 [LLM Usage] Prompt: {usage.get('prompt_tokens', 'N/A')}, Completion: {usage.get('completion_tokens', 'N/A')}, Total: {usage.get('total_tokens', 'N/A')} tokens")
+                
+                # Log response content (complete content, no truncation)
+                if 'choices' in response_data and response_data['choices']:
+                    for i, choice in enumerate(response_data['choices']):
+                        content = choice.get('message', {}).get('content', '')
+                        finish_reason = choice.get('finish_reason', 'unknown')
+                        
+                        logger.info(f"🤖 [LLM Response {request_id}] Choice {i+1} (finish: {finish_reason}) ({len(content)} chars):")
+                        logger.info(f"🤖 [LLM Response {request_id}] {content}")
+                        logger.info(f"🤖 [LLM Response {request_id}] --- End Choice {i+1} ---")
+                else:
+                    logger.warning(f"🤖 [LLM Response {request_id}] No choices in response: {response_data}")
+                
+                logger.info(f"🤖 [LLM Response {request_id}] ===== COMPLETED LLM REQUEST =====")
+                
+                return response_data
         
         except httpx.HTTPStatusError as e:
-            logger.error(f"HTTP error {e.response.status_code}: {e.response.text}")
+            error_detail = e.response.text if hasattr(e.response, 'text') else 'No error detail'
+            logger.error(f"❌ [LLM Error] HTTP {e.response.status_code}: {error_detail}")
+            logger.error(f"❌ [LLM Error] Request URL: {e.request.url}")
+            logger.error(f"❌ [LLM Error] Request model: {model}, messages: {len(messages)}")
             raise
         except Exception as e:
-            logger.error(f"Error in chat completion: {e}")
+            logger.error(f"❌ [LLM Error] Request failed: {type(e).__name__}: {e}")
+            logger.error(f"❌ [LLM Error] Request details - model: {model}, temp: {temperature}, max_tokens: {max_tokens}")
             raise
     
     async def _stream_completion(
@@ -140,9 +204,15 @@ class SiliconFlowClient:
         """Get text embeddings from SiliconFlow API."""
         model = model or config.embedding_model
         
-        logger.info(f"Getting embeddings for {len(texts)} texts using model: {model}")
+        logger.info(f"🔤 [Embeddings Request] Model: {model}, Texts: {len(texts)}")
+        
+        # Log all texts for debugging (complete content)
+        for i, text in enumerate(texts):
+            logger.debug(f"🔤 [Embeddings Input] Text {i+1} ({len(text)} chars): {text}")
         
         try:
+            start_time = asyncio.get_event_loop().time()
+            
             response = await self.client.post(
                 "/embeddings",
                 json={
@@ -152,14 +222,27 @@ class SiliconFlowClient:
             )
             response.raise_for_status()
             
+            end_time = asyncio.get_event_loop().time()
             result = response.json()
-            return [item["embedding"] for item in result["data"]]
+            
+            # Log response details
+            response_time = end_time - start_time
+            logger.info(f"🔤 [Embeddings Response] Time: {response_time:.2f}s")
+            
+            embeddings = [item["embedding"] for item in result["data"]]
+            logger.info(f"🔤 [Embeddings Response] Generated {len(embeddings)} embeddings, dimension: {len(embeddings[0]) if embeddings else 0}")
+            
+            if 'usage' in result:
+                usage = result['usage']
+                logger.info(f"🔤 [Embeddings Usage] Total tokens: {usage.get('total_tokens', 'N/A')}")
+            
+            return embeddings
         
         except httpx.HTTPStatusError as e:
-            logger.error(f"HTTP error {e.response.status_code}: {e.response.text}")
+            logger.error(f"❌ [Embeddings Error] HTTP {e.response.status_code}: {e.response.text}")
             raise
         except Exception as e:
-            logger.error(f"Error getting embeddings: {e}")
+            logger.error(f"❌ [Embeddings Error] Request failed: {e}")
             raise
     
     async def multimodal_understanding(

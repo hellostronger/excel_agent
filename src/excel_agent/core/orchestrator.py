@@ -1,4 +1,9 @@
-"""Orchestrator Agent - Core coordinator for all agents in the system."""
+"""
+Orchestrator Agent - Core coordinator for all agents in the system.
+
+This module provides the main orchestration logic for the Excel Intelligent Agent System,
+handling intent parsing, workflow routing, and agent coordination.
+"""
 
 import asyncio
 import json
@@ -12,7 +17,7 @@ from google.adk.models import Gemini
 from ..agents.base import BaseAgent
 from ..agents import (
     FileIngestAgent, StructureScanAgent, ColumnProfilingAgent,
-    CodeGenerationAgent, ExecutionAgent
+    CodeGenerationAgent, ExecutionAgent, ResponseGenerationAgent
 )
 from ..models.base import RequestType, AgentRequest, AgentResponse, AgentStatus
 from ..models.agents import *
@@ -49,6 +54,7 @@ class Orchestrator(BaseAgent):
         self.column_profiling_agent = ColumnProfilingAgent()
         self.code_generation_agent = CodeGenerationAgent()
         self.execution_agent = ExecutionAgent()
+        self.response_generation_agent = ResponseGenerationAgent()
         
         # Workflow history for optimization
         self.workflow_history = []
@@ -65,31 +71,54 @@ class Orchestrator(BaseAgent):
         """Process a user request end-to-end."""
         context = context or {}
         
+        request_id = f"req_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{id(self) % 10000}"
+        context['request_id'] = request_id
+        
         try:
+            self.logger.info(f"🚀 [Orchestrator {request_id}] Starting request processing")
+            self.logger.info(f"🚀 [Orchestrator {request_id}] User request: {user_request[:200]}{'...' if len(user_request) > 200 else ''}")
+            self.logger.info(f"🚀 [Orchestrator {request_id}] File path: {file_path}")
+            self.logger.debug(f"🚀 [Orchestrator {request_id}] Context: {context}")
+            
+            start_time = datetime.now()
+            
             # Initialize MCP system if not already done
             if not self.mcp_initialized:
+                self.logger.info(f"🔄 [Orchestrator {request_id}] Initializing MCP system...")
                 await self._initialize_mcp_system()
             
-            self.logger.info(f"Processing user request: {user_request[:100]}...")
+            # Step 0: Check if request is Excel-related
+            self.logger.info(f"🔍 [Orchestrator {request_id}] Step 0: Checking Excel relevance...")
+            excel_relevance = await self._check_excel_relevance(user_request, file_path, context)
+            
+            if not excel_relevance['is_excel_related']:
+                self.logger.info(f"💬 [Orchestrator {request_id}] Non-Excel request detected, using direct LLM response")
+                return await self._handle_non_excel_request(user_request, excel_relevance, request_id, start_time)
+            
+            self.logger.info(f"📊 [Orchestrator {request_id}] Excel-related request confirmed, proceeding with workflow")
             
             # Parse intent and determine workflow type
+            self.logger.info(f"🧠 [Orchestrator {request_id}] Step 1: Parsing user intent...")
             intent_result = await self._parse_intent(user_request, context)
             workflow_type = intent_result['workflow_type']
             
-            self.logger.info(f"Determined workflow type: {workflow_type}")
+            self.logger.info(f"🧠 [Orchestrator {request_id}] Intent parsed - Workflow type: {workflow_type}")
+            self.logger.debug(f"🧠 [Orchestrator {request_id}] Intent details: {intent_result}")
             
             # Execute appropriate workflow
+            self.logger.info(f"⚙️  [Orchestrator {request_id}] Step 2: Executing {workflow_type} workflow...")
+            
             if workflow_type == WorkflowType.SINGLE_TABLE:
                 result = await self._execute_single_table_workflow(
-                    user_request, file_path, intent_result
+                    user_request, file_path, intent_result, request_id
                 )
             elif workflow_type == WorkflowType.SINGLE_CELL:
                 result = await self._execute_single_cell_workflow(
-                    user_request, file_path, intent_result
+                    user_request, file_path, intent_result, request_id
                 )
             elif workflow_type == WorkflowType.MULTI_TABLE:
                 result = await self._execute_multi_table_workflow(
-                    user_request, file_path, intent_result
+                    user_request, file_path, intent_result, request_id
                 )
             else:
                 raise ValueError(f"Unknown workflow type: {workflow_type}")
@@ -97,14 +126,27 @@ class Orchestrator(BaseAgent):
             # Record workflow execution
             self._record_workflow_execution(workflow_type, result)
             
+            end_time = datetime.now()
+            total_time = (end_time - start_time).total_seconds()
+            
+            self.logger.info(f"✅ [Orchestrator {request_id}] Request completed successfully in {total_time:.2f}s")
+            self.logger.info(f"✅ [Orchestrator {request_id}] Final status: {result.get('status', 'unknown')}")
+            
             return result
             
         except Exception as e:
-            self.logger.error(f"Error processing user request: {e}")
+            end_time = datetime.now()
+            total_time = (end_time - start_time).total_seconds() if 'start_time' in locals() else 0
+            
+            self.logger.error(f"❌ [Orchestrator {request_id}] Request failed after {total_time:.2f}s: {e}")
+            self.logger.error(f"❌ [Orchestrator {request_id}] Exception type: {type(e).__name__}")
+            
             error_result = {
                 'status': 'failed',
                 'error': str(e),
-                'timestamp': datetime.now().isoformat()
+                'error_type': type(e).__name__,
+                'timestamp': datetime.now().isoformat(),
+                'execution_time': total_time
             }
             self.error_log.append(error_result)
             return error_result
@@ -117,11 +159,14 @@ class Orchestrator(BaseAgent):
         """Parse user intent and determine workflow type."""
         
         # Use LLM to analyze the request
+        # Prepare context for JSON serialization
+        serializable_context = self._make_json_serializable(context)
+        
         intent_prompt = f"""
 Analyze this user request for Excel data processing and classify it:
 
 User Request: "{user_request}"
-Context: {json.dumps(context, indent=2)}
+Context: {json.dumps(serializable_context, indent=2)}
 
 Classify the request as one of:
 1. SINGLE_TABLE - Operations on one table/sheet (filter, sort, aggregate, analyze)
@@ -152,7 +197,7 @@ Respond in JSON format:
             response = await client.chat_completion(
                 messages=[{"role": "user", "content": intent_prompt}],
                 temperature=0.3,
-                max_tokens=500
+                request_id=context.get('request_id', 'orchestrator')
             )
         
         # Parse the response
@@ -171,7 +216,14 @@ Respond in JSON format:
             if workflow_type not in ['SINGLE_TABLE', 'SINGLE_CELL', 'MULTI_TABLE']:
                 workflow_type = 'SINGLE_TABLE'
             
-            intent_data['workflow_type'] = WorkflowType(workflow_type)
+            # Convert to lowercase with underscores for enum
+            workflow_type_mapping = {
+                'SINGLE_TABLE': 'single_table',
+                'SINGLE_CELL': 'single_cell', 
+                'MULTI_TABLE': 'multi_table'
+            }
+            enum_value = workflow_type_mapping.get(workflow_type, 'single_table')
+            intent_data['workflow_type'] = WorkflowType(enum_value)
             
             return intent_data
             
@@ -207,7 +259,8 @@ Respond in JSON format:
         self,
         user_request: str,
         file_path: str,
-        intent_result: Dict[str, Any]
+        intent_result: Dict[str, Any],
+        request_id: str = "unknown"
     ) -> Dict[str, Any]:
         """Execute single-table workflow: File Ingest → Column Profiling → Code Generation → Execution."""
         
@@ -215,7 +268,8 @@ Respond in JSON format:
         
         try:
             # Step 1: File Ingest
-            self.logger.info("Step 1: File Ingest")
+            self.logger.info(f"📁 [FileIngest {request_id}] Step 1: File Ingest starting...")
+            self.logger.info(f"📁 [FileIngest {request_id}] Processing file: {file_path}")
             ingest_request = FileIngestRequest(
                 agent_id="FileIngestAgent",
                 file_path=file_path,
@@ -294,8 +348,11 @@ Respond in JSON format:
                 "result": execution_response.result
             })
             
-            # Prepare final result
-            return {
+            # Step 5: Response Generation
+            self.logger.info("Step 5: Response Generation")
+            
+            # Prepare workflow results for response generation
+            workflow_results = {
                 'status': 'success',
                 'workflow_type': 'single_table',
                 'steps': workflow_steps,
@@ -304,12 +361,269 @@ Respond in JSON format:
                 'dry_run_plan': code_response.dry_run_plan,
                 'output': execution_response.output,
                 'result_file': execution_response.result_file,
-                'timestamp': datetime.now().isoformat()
+                'execution_time': 0,  # Will be calculated later
+                'excel_data_used': True,
+                'file_processed': True,
+                'processed_file': file_path
             }
+            
+            response_request = ResponseGenerationRequest(
+                agent_id="ResponseGenerationAgent",
+                user_query=user_request,
+                workflow_results=workflow_results,
+                file_info=ingest_response.result,
+                context=code_context
+            )
+            
+            async with self.response_generation_agent:
+                response_generation_result = await self.response_generation_agent.execute_with_timeout(response_request)
+            
+            workflow_steps.append({
+                "step": "response_generation",
+                "status": "success" if response_generation_result.status == AgentStatus.SUCCESS else "warning",
+                "result": response_generation_result.result if response_generation_result.status == AgentStatus.SUCCESS else None
+            })
+            
+            # Prepare final result with generated response
+            final_result = {
+                'status': 'success',
+                'workflow_type': 'single_table', 
+                'steps': workflow_steps,
+                'final_result': execution_response.result,
+                'generated_code': code_response.code,
+                'dry_run_plan': code_response.dry_run_plan,
+                'output': execution_response.output,
+                'result_file': execution_response.result_file,
+                'excel_data_used': True,
+                'file_processed': True,
+                'processed_file': file_path,
+                'timestamp': datetime.now().isoformat(),
+                'note': '此回答基于Excel数据处理结果'
+            }
+            
+            # Add response generation results if successful
+            if response_generation_result.status == AgentStatus.SUCCESS:
+                final_result.update({
+                    'user_response': response_generation_result.response,
+                    'response_summary': response_generation_result.summary,
+                    'recommendations': response_generation_result.recommendations,
+                    'technical_details': response_generation_result.technical_details
+                })
+            else:
+                # Fallback response if response generation fails
+                final_result.update({
+                    'user_response': f"已完成数据处理任务：{user_request}\n\n执行结果：\n{execution_response.output}",
+                    'response_summary': '数据处理完成，但响应生成出现问题',
+                    'recommendations': ['请检查执行结果', '如有疑问请重新提问'],
+                    'technical_details': None
+                })
+            
+            return final_result
             
         except Exception as e:
             workflow_steps.append({"step": "error", "status": "failed", "error": str(e)})
             return self._create_error_result(f"Workflow failed: {e}", str(e), workflow_steps)
+    
+    async def _check_excel_relevance(
+        self,
+        user_request: str,
+        file_path: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """Check if the user request is related to Excel data processing."""
+        
+        # Quick heuristics check first
+        request_lower = user_request.lower()
+        excel_keywords = [
+            'excel', 'xlsx', 'xls', 'csv', 'spreadsheet', 'table', 'data',
+            'column', 'row', 'cell', 'sheet', 'workbook', 'pivot', 'chart',
+            'filter', 'sort', 'aggregate', 'sum', 'count', 'average', 'merge'
+        ]
+        
+        # Check for Excel keywords first (more decisive)
+        keyword_matches = [keyword for keyword in excel_keywords if keyword in request_lower]
+        if keyword_matches:
+            confidence = min(0.8, len(keyword_matches) * 0.2)
+            return {
+                'is_excel_related': True,
+                'confidence': confidence,
+                'reason': f'Excel keywords found: {keyword_matches}',
+                'method': 'keyword_matching'
+            }
+        
+        # Check for obvious non-Excel questions
+        non_excel_patterns = [
+            '你是谁', 'who are you', '你好', 'hello', '天气', 'weather', 
+            '时间', 'time', '今天', 'today', '新闻', 'news',
+            '什么是', 'what is', 'how to', '如何', '为什么', 'why'
+        ]
+        
+        for pattern in non_excel_patterns:
+            if pattern in request_lower:
+                return {
+                    'is_excel_related': False,
+                    'confidence': 0.8,
+                    'reason': f'General question pattern detected: {pattern}',
+                    'method': 'pattern_matching'
+                }
+        
+        # If file_path is provided and is an Excel file, but no Excel keywords and no general patterns,
+        # use LLM to make the decision
+        file_is_excel = file_path and (file_path.endswith('.xlsx') or file_path.endswith('.xls') or file_path.endswith('.csv'))
+        
+        # Use LLM for more sophisticated analysis
+        serializable_context = self._make_json_serializable(context or {})
+        
+        relevance_prompt = f"""
+Analyze this user request to determine if it's related to Excel, spreadsheet, or data processing tasks:
+
+User Request: "{user_request}"
+File Path: {file_path or 'None'}
+Excel File Detected: {file_is_excel}
+Context: {json.dumps(serializable_context, indent=2)}
+
+Important: Even if an Excel file is provided, the user may ask general questions that are NOT about data processing.
+
+Determine if this request involves:
+1. Excel file operations (reading, writing, analyzing Excel files)
+2. Spreadsheet data processing (filtering, sorting, calculations)
+3. Data analysis tasks that would use the Excel data
+4. Table/tabular data operations
+
+Do NOT classify as Excel-related if the request is:
+- General conversation ("你是谁", "hello", "how are you")
+- Non-data questions ("what is AI", "weather", "time")
+- Questions about topics unrelated to the Excel file
+
+Respond in JSON format:
+{{
+    "is_excel_related": true/false,
+    "confidence": 0.0-1.0,
+    "reason": "explanation of decision",
+    "suggested_category": "excel_data_processing|general_question|other_domain"
+}}
+
+Examples:
+- "你是谁?" -> false (general conversation, not about data)
+- "What's the weather today?" -> false (general question)
+- "分析这个表格的数据" -> true (Excel data analysis)
+- "How do I calculate sum in column A?" -> true (Excel operation)
+- "What is machine learning?" -> false (general knowledge question)
+"""
+        
+        try:
+            async with SiliconFlowClient() as client:
+                response = await client.chat_completion(
+                    messages=[{"role": "user", "content": relevance_prompt}],
+                    temperature=0.2,
+                    request_id=context.get('request_id', 'relevance_check') if context else 'relevance_check'
+                )
+            
+            # Parse the response
+            relevance_text = response['choices'][0]['message']['content']
+            if '```json' in relevance_text:
+                json_start = relevance_text.find('```json') + 7
+                json_end = relevance_text.find('```', json_start)
+                relevance_text = relevance_text[json_start:json_end]
+            
+            relevance_data = json.loads(relevance_text.strip())
+            relevance_data['method'] = 'llm_analysis'
+            
+            return relevance_data
+            
+        except Exception as e:
+            self.logger.warning(f"LLM relevance check failed: {e}, falling back to heuristic analysis")
+            # Fallback: if we detected non-Excel patterns, use that; otherwise be conservative
+            for pattern in non_excel_patterns:
+                if pattern in request_lower:
+                    return {
+                        'is_excel_related': False,
+                        'confidence': 0.6,
+                        'reason': f'Fallback: non-Excel pattern detected: {pattern}',
+                        'method': 'fallback_pattern'
+                    }
+            
+            # If Excel file is provided and no clear non-Excel patterns, assume Excel-related
+            if file_is_excel:
+                return {
+                    'is_excel_related': True,
+                    'confidence': 0.5,
+                    'reason': 'Fallback: Excel file provided, assuming data-related',
+                    'method': 'fallback_file_based'
+                }
+            
+            # No file, no clear patterns - default to non-Excel
+            return {
+                'is_excel_related': False,
+                'confidence': 0.3,
+                'reason': 'Fallback: unclear request, defaulting to general',
+                'method': 'fallback_default'
+            }
+    
+    async def _handle_non_excel_request(
+        self,
+        user_request: str,
+        excel_relevance: Dict[str, Any],
+        request_id: str,
+        start_time: datetime
+    ) -> Dict[str, Any]:
+        """Handle non-Excel related requests with direct LLM response."""
+        
+        try:
+            # Prepare a general conversation prompt
+            general_prompt = f"""
+You are a helpful AI assistant. The user has asked a question that doesn't appear to be related to Excel or data processing.
+
+User Request: "{user_request}"
+
+Please provide a helpful, accurate, and informative response to their question. Be concise but thorough.
+
+Important: This response will be marked as not using any Excel data or file processing capabilities.
+"""
+            
+            async with SiliconFlowClient() as client:
+                response = await client.chat_completion(
+                    messages=[{"role": "user", "content": general_prompt}],
+                    temperature=0.7,
+                    request_id=request_id
+                )
+            
+            llm_response = response['choices'][0]['message']['content']
+            
+            end_time = datetime.now()
+            total_time = (end_time - start_time).total_seconds()
+            
+            self.logger.info(f"💬 [Orchestrator {request_id}] Non-Excel request completed in {total_time:.2f}s")
+            
+            return {
+                'status': 'success',
+                'response_type': 'general_llm_response',
+                'answer': llm_response,
+                'excel_data_used': False,
+                'file_processed': False,
+                'relevance_analysis': excel_relevance,
+                'execution_time': total_time,
+                'timestamp': datetime.now().isoformat(),
+                'note': '此回答未引用任何Excel数据或文件处理功能'
+            }
+            
+        except Exception as e:
+            end_time = datetime.now()
+            total_time = (end_time - start_time).total_seconds()
+            
+            self.logger.error(f"❌ [Orchestrator {request_id}] Non-Excel request failed: {e}")
+            
+            return {
+                'status': 'failed',
+                'response_type': 'general_llm_response',
+                'error': str(e),
+                'excel_data_used': False,
+                'file_processed': False,
+                'relevance_analysis': excel_relevance,
+                'execution_time': total_time,
+                'timestamp': datetime.now().isoformat(),
+                'note': '此回答未引用任何Excel数据或文件处理功能'
+            }
     
     async def _execute_single_cell_workflow(
         self,
@@ -411,7 +725,8 @@ Respond in JSON format:
                 "result": execution_response.result
             })
             
-            return {
+            # Add Response Generation step
+            workflow_results = {
                 'status': 'success',
                 'workflow_type': 'multi_table',
                 'steps': workflow_steps,
@@ -419,18 +734,90 @@ Respond in JSON format:
                 'generated_code': code_response.code,
                 'output': execution_response.output,
                 'result_file': execution_response.result_file,
-                'timestamp': datetime.now().isoformat()
+                'execution_time': 0,
+                'excel_data_used': True,
+                'file_processed': True,
+                'processed_file': file_path
             }
+            
+            response_request = ResponseGenerationRequest(
+                agent_id="ResponseGenerationAgent",
+                user_query=user_request,
+                workflow_results=workflow_results,
+                file_info=ingest_response.result,
+                context=code_context
+            )
+            
+            async with self.response_generation_agent:
+                response_generation_result = await self.response_generation_agent.execute_with_timeout(response_request)
+            
+            workflow_steps.append({
+                "step": "response_generation",
+                "status": "success" if response_generation_result.status == AgentStatus.SUCCESS else "warning",
+                "result": response_generation_result.result if response_generation_result.status == AgentStatus.SUCCESS else None
+            })
+            
+            final_result = {
+                'status': 'success',
+                'workflow_type': 'multi_table',
+                'steps': workflow_steps,
+                'final_result': execution_response.result,
+                'generated_code': code_response.code,
+                'output': execution_response.output,
+                'result_file': execution_response.result_file,
+                'excel_data_used': True,
+                'file_processed': True,
+                'processed_file': file_path,
+                'timestamp': datetime.now().isoformat(),
+                'note': '此回答基于多表Excel数据处理结果'
+            }
+            
+            # Add response generation results
+            if response_generation_result.status == AgentStatus.SUCCESS:
+                final_result.update({
+                    'user_response': response_generation_result.response,
+                    'response_summary': response_generation_result.summary,
+                    'recommendations': response_generation_result.recommendations,
+                    'technical_details': response_generation_result.technical_details
+                })
+            else:
+                final_result.update({
+                    'user_response': f"已完成多表数据处理任务：{user_request}\n\n执行结果：\n{execution_response.output}",
+                    'response_summary': '多表数据处理完成，但响应生成出现问题',
+                    'recommendations': ['请检查执行结果', '如有疑问请重新提问'],
+                    'technical_details': None
+                })
+            
+            return final_result
             
         except Exception as e:
             workflow_steps.append({"step": "error", "status": "failed", "error": str(e)})
             return self._create_error_result(f"Multi-table workflow failed: {e}", str(e), workflow_steps)
     
+    def _make_json_serializable(self, obj: Any) -> Any:
+        """Convert objects to JSON-serializable format."""
+        if isinstance(obj, dict):
+            return {k: self._make_json_serializable(v) for k, v in obj.items()}
+        elif isinstance(obj, (list, tuple)):
+            return [self._make_json_serializable(item) for item in obj]
+        elif isinstance(obj, datetime):
+            return obj.isoformat()
+        elif hasattr(obj, '__dict__'):
+            return str(obj)
+        else:
+            try:
+                json.dumps(obj)
+                return obj
+            except (TypeError, ValueError):
+                return str(obj)
+    
     def _create_error_result(
         self, 
         message: str, 
         error_log: str, 
-        workflow_steps: List[Dict] = None
+        workflow_steps: List[Dict] = None,
+        excel_data_used: bool = True,
+        file_processed: bool = False
     ) -> Dict[str, Any]:
         """Create standardized error result."""
         return {
@@ -438,7 +825,10 @@ Respond in JSON format:
             'error_message': message,
             'error_log': error_log,
             'workflow_steps': workflow_steps or [],
-            'timestamp': datetime.now().isoformat()
+            'excel_data_used': excel_data_used,
+            'file_processed': file_processed,
+            'timestamp': datetime.now().isoformat(),
+            'note': '处理Excel数据时出现错误' if excel_data_used else '处理请求时出现错误'
         }
     
     def _record_workflow_execution(

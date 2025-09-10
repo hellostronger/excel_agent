@@ -82,6 +82,7 @@ class FileIngestAgent(BaseAgent):
                 sheets=metadata.sheets,
                 result={
                     "file_id": file_id,
+                    "file_path": str(file_path),
                     "sheets": metadata.sheets,
                     "metadata": metadata.model_dump()
                 }

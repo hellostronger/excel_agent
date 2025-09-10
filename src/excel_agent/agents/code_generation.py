@@ -132,8 +132,8 @@ Generate code for this request: {user_request}
             {
                 "role": "system",
                 "content": system_prompt.format(
-                    file_info=json.dumps(file_info, indent=2),
-                    context=json.dumps(context, indent=2),
+                    file_info=json.dumps(self._make_json_serializable(file_info), indent=2),
+                    context=json.dumps(self._make_json_serializable(context), indent=2),
                     user_request=request.user_request
                 )
             },

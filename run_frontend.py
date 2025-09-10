@@ -4,6 +4,11 @@ import os
 import sys
 from pathlib import Path
 
+# Set UTF-8 encoding for Windows
+if sys.platform == 'win32':
+    import codecs
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.detach())
+
 def main():
     """Run the frontend application."""
     print("🚀 启动Excel智能分析系统前端...")
@@ -46,7 +51,7 @@ def main():
     # Import and run the Flask app
     sys.path.insert(0, str(backend_dir))
     from app import app
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=False, host='0.0.0.0', port=5000)
 
 if __name__ == '__main__':
     main()

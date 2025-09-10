@@ -654,10 +654,8 @@
                     showSuccess('文件处理完成！现在可以开始提问了。');
                 }
                 
-                // Display data preview
-                if (processResult.preview) {
-                    displayDataPreview(processResult.preview, processResult.metadata);
-                }
+                // Display data preview using backend HTML conversion
+                await loadDataPreview();
                 
             } catch (error) {
                 showError('文件处理失败: ' + error.message);
@@ -674,57 +672,110 @@
             }
         }
 
-        function displayDataPreview(preview, metadata) {
-            const dataPreview = document.getElementById('dataPreview');
-            
-            if (!preview || !preview.columns) {
-                dataPreview.innerHTML = '<p>无法生成数据预览</p>';
+        async function loadDataPreview() {
+            if (!currentFileId) {
                 return;
             }
+
+            const dataPreview = document.getElementById('dataPreview');
+            dataPreview.innerHTML = '<div style="padding: 20px; text-align: center;">📊 正在生成数据预览...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/preview/${currentFileId}?max_rows=50&max_cols=10`);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load preview');
+                }
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayDataPreview(result.html, result.metadata);
+                } else {
+                    dataPreview.innerHTML = `<div class="error">预览失败: ${result.error}</div>`;
+                }
+            } catch (error) {
+                console.error('Preview error:', error);
+                dataPreview.innerHTML = `<div class="error">无法加载数据预览: ${error.message}</div>`;
+            }
+        }
+
+        function displayDataPreview(htmlContent, metadata) {
+            const dataPreview = document.getElementById('dataPreview');
             
-            let tableHTML = `
+            const fileName = uploadedFile ? uploadedFile.name : '未知文件';
+            
+            let previewHTML = `
                 <div style="background: white; padding: 15px; border-radius: 8px;">
-                    <h4>📊 数据预览 - ${uploadedFile.name}</h4>
-                    <div style="overflow-x: auto; margin-top: 15px;">
-                        <table style="width: 100%; border-collapse: collapse;">
-                            <thead>
-                                <tr style="background: #f5f5f5;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h4>📊 数据预览 - ${fileName}</h4>
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="loadDataPreview()" style="padding: 5px 10px; background: #4CAF50; color: white; border: none; border-radius: 3px; cursor: pointer;">🔄 刷新</button>
+                            <button onclick="showFullPreview()" style="padding: 5px 10px; background: #2196F3; color: white; border: none; border-radius: 3px; cursor: pointer;">🔍 查看完整数据</button>
+                        </div>
+                    </div>
+                    
+                    <div style="overflow: auto; max-height: 600px; border: 1px solid #ddd; border-radius: 5px;">
+                        ${htmlContent}
+                    </div>
             `;
             
-            // Add column headers
-            preview.columns.forEach(col => {
-                tableHTML += `<th style="padding: 10px; border: 1px solid #ddd;">${col}</th>`;
-            });
-            
-            tableHTML += `
-                                </tr>
-                            </thead>
-                            <tbody>
-            `;
-            
-            // Add sample data rows
-            if (preview.sample_data) {
-                preview.sample_data.forEach(row => {
-                    tableHTML += '<tr>';
-                    row.forEach(cell => {
-                        tableHTML += `<td style="padding: 10px; border: 1px solid #ddd;">${cell}</td>`;
-                    });
-                    tableHTML += '</tr>';
-                });
+            if (metadata) {
+                previewHTML += `
+                    <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 5px; font-size: 14px;">
+                        <strong>📈 数据概览:</strong><br>
+                        • 工作表: ${metadata.current_sheet || 'N/A'}<br>
+                        • 行数: ${metadata.total_rows || 'N/A'} 行<br>
+                        • 列数: ${metadata.total_cols || 'N/A'} 列<br>
+                        ${metadata.truncated && metadata.truncated.rows ? '• ⚠️ 显示部分数据，如需查看全部请点击"查看完整数据"<br>' : ''}
+                        ${metadata.sheet_names && metadata.sheet_names.length > 1 ? 
+                            `• 其他工作表: ${metadata.sheet_names.filter(s => s !== metadata.current_sheet).join(', ')}` : ''}
+                    </div>
+                `;
             }
             
-            tableHTML += `
-                            </tbody>
-                        </table>
-                    </div>
-                    <p style="margin-top: 15px; color: #6c757d;">
-                        <strong>数据概览:</strong> 
-                        共${metadata.total_rows || 'N/A'}行数据，${metadata.total_columns || 'N/A'}个字段
-                    </p>
-                </div>
-            `;
+            previewHTML += '</div>';
             
-            dataPreview.innerHTML = tableHTML;
+            dataPreview.innerHTML = previewHTML;
+        }
+
+        async function showFullPreview() {
+            if (!currentFileId) {
+                return;
+            }
+
+            const response = await fetch(`${API_BASE}/preview/${currentFileId}?max_rows=1000&max_cols=50`);
+            const result = await response.json();
+            
+            if (result.success) {
+                // Open in new window/tab with full preview
+                const newWindow = window.open('', '_blank');
+                newWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>完整数据预览 - ${uploadedFile ? uploadedFile.name : '数据'}</title>
+                        <meta charset="UTF-8">
+                        <style>
+                            body { font-family: 'Segoe UI', sans-serif; margin: 20px; }
+                            .header { text-align: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #ddd; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="header">
+                            <h1>📊 完整数据预览</h1>
+                            <p>文件: ${uploadedFile ? uploadedFile.name : '未知文件'}</p>
+                        </div>
+                        <div style="overflow: auto;">
+                            ${result.html}
+                        </div>
+                    </body>
+                    </html>
+                `);
+                newWindow.document.close();
+            } else {
+                showError('无法加载完整预览: ' + result.error);
+            }
         }
 
         async function submitQuery() {

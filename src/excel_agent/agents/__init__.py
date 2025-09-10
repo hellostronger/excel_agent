@@ -11,6 +11,7 @@ from .execution import ExecutionAgent
 from .summarization import SummarizationAgent
 from .memory import MemoryAgent
 from .relation_discovery import RelationDiscoveryAgent
+from .response_generation import ResponseGenerationAgent
 
 __all__ = [
     "BaseAgent",
@@ -24,4 +25,5 @@ __all__ = [
     "SummarizationAgent",
     "MemoryAgent",
     "RelationDiscoveryAgent",
+    "ResponseGenerationAgent",
 ]

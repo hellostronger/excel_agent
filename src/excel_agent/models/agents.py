@@ -153,3 +153,20 @@ class RelationDiscoveryResponse(AgentResponse):
     candidate_relations: List[RelationCandidate] = Field(default_factory=list)
     recommended_keys: List[Dict[str, str]] = Field(default_factory=list)
     need_user_confirmation: bool = False
+
+
+# Response Generation Agent Models
+class ResponseGenerationRequest(AgentRequest):
+    """Request for Response Generation Agent."""
+    user_query: str
+    workflow_results: Dict[str, Any]
+    file_info: Optional[Dict[str, Any]] = None
+    context: Optional[Dict[str, Any]] = None
+
+
+class ResponseGenerationResponse(AgentResponse):
+    """Response from Response Generation Agent."""
+    response: str = ""
+    summary: str = ""
+    recommendations: List[str] = Field(default_factory=list)
+    technical_details: Optional[Dict[str, Any]] = None
