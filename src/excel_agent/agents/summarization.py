@@ -78,7 +78,11 @@ Excel数据内容 (Markdown格式):
                     "query": request.query
                 },
                 key_insights=["基于文本内容的智能分析"],
-                result=llm_answer
+                result={
+                    "analysis": llm_answer,
+                    "processing_mode": "text_content",
+                    "success": True
+                }
             )
             
         except Exception as e:

@@ -5,6 +5,52 @@ from typing import Optional
 from pydantic_settings import BaseSettings
 from pydantic import Field
 
+# Constants for table analysis (inspired by ST-Raptor)
+DELIMITER = "################"
+
+# Table type constants
+T_LIST = 1
+T_ARRT = 2
+T_SEMI = 3
+T_MIX = 4
+T_OTHER = -1
+
+# Table size constants
+SMALL_TABLE_ROWS = 3
+SMALL_TABLE_COLUMNS = 3
+BIG_TABLE_ROWS = 8
+BIG_TABLE_COLUMNS = 8
+
+# Default naming
+DEFAULT_TABLE_NAME = "table"
+DEFAULT_SUBTABLE_NAME = "subtable"
+DEFAULT_SUBVALUE_NAME = "subvalue"
+DEFAULT_SPLIT_SIG = "-"
+
+# Schema detection
+DIRECTION_KEY = "direction_key"
+VLM_SCHEMA_KEY = "vlm_schema_key"
+SCHEMA_TOP = True
+SCHEMA_LEFT = False
+SCHEMA_FAIL = -1
+
+# Processing limits
+MAX_ITER_META_INFORMATION_DETECTION = 5
+MAX_ITER_PRIMITIVE = 5
+MAX_RETRY_HOTREE = 3
+MAX_RETRY_PRIMITIVE = 5
+
+# Status constants
+STATUS_END = 1
+STATUS_RETRIEVE = 2
+STATUS_AGG = 3
+STATUS_SPLIT = 4
+
+# Data type tags
+TAG_DISCRETE = 1
+TAG_CONTINUOUS = 2
+TAG_TEXT = 3
+
 
 class Config(BaseSettings):
     """Application configuration."""
@@ -47,6 +93,25 @@ class Config(BaseSettings):
     agent_timeout_seconds: int = Field(default=300, env="AGENT_TIMEOUT_SECONDS")
     memory_retention_days: int = Field(default=30, env="MEMORY_RETENTION_DAYS")
     
+    # Cache Configuration (new)
+    enable_cache: bool = Field(default=True, env="ENABLE_CACHE")
+    cache_ttl_hours: int = Field(default=24, env="CACHE_TTL_HOURS")
+    max_cache_size_mb: int = Field(default=500, env="MAX_CACHE_SIZE_MB")
+    
+    # Performance Configuration (new)
+    enable_embedding_cache: bool = Field(default=True, env="ENABLE_EMBEDDING_CACHE")
+    max_prompt_tokens: int = Field(default=4000, env="MAX_PROMPT_TOKENS")
+    enable_query_decomposition: bool = Field(default=True, env="ENABLE_QUERY_DECOMPOSITION")
+    
+    # Cache subdirectories (computed fields)
+    html_cache_dir: Optional[str] = Field(default=None, init=False)
+    image_cache_dir: Optional[str] = Field(default=None, init=False)
+    excel_cache_dir: Optional[str] = Field(default=None, init=False)
+    schema_cache_dir: Optional[str] = Field(default=None, init=False)
+    json_cache_dir: Optional[str] = Field(default=None, init=False)
+    embedding_cache_dir: Optional[str] = Field(default=None, init=False)
+    tree_cache_dir: Optional[str] = Field(default=None, init=False)
+    
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
@@ -57,6 +122,20 @@ class Config(BaseSettings):
         # Create directories if they don't exist
         os.makedirs(self.temp_dir, exist_ok=True)
         os.makedirs(self.cache_dir, exist_ok=True)
+        
+        # Create cache subdirectories (inspired by ST-Raptor)
+        self.html_cache_dir = os.path.join(self.cache_dir, "html")
+        self.image_cache_dir = os.path.join(self.cache_dir, "image")
+        self.excel_cache_dir = os.path.join(self.cache_dir, "excel")
+        self.schema_cache_dir = os.path.join(self.cache_dir, "schema")
+        self.json_cache_dir = os.path.join(self.cache_dir, "json")
+        self.embedding_cache_dir = os.path.join(self.cache_dir, "embedding")
+        self.tree_cache_dir = os.path.join(self.cache_dir, "tree")
+        
+        for cache_dir in [self.html_cache_dir, self.image_cache_dir, self.excel_cache_dir,
+                         self.schema_cache_dir, self.json_cache_dir, self.embedding_cache_dir,
+                         self.tree_cache_dir]:
+            os.makedirs(cache_dir, exist_ok=True)
         
         # Load saved configuration from storage
         self._load_saved_config()
@@ -188,7 +267,13 @@ class Config(BaseSettings):
                     'log_level': self.log_level,
                     'max_file_size_mb': self.max_file_size_mb,
                     'temp_dir': self.temp_dir,
-                    'cache_dir': self.cache_dir
+                    'cache_dir': self.cache_dir,
+                    'enable_cache': self.enable_cache,
+                    'cache_ttl_hours': self.cache_ttl_hours,
+                    'max_cache_size_mb': self.max_cache_size_mb,
+                    'enable_embedding_cache': self.enable_embedding_cache,
+                    'max_prompt_tokens': self.max_prompt_tokens,
+                    'enable_query_decomposition': self.enable_query_decomposition
                 }
             }
             

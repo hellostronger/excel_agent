@@ -1315,16 +1315,94 @@ def query_batch_data():
         async def query_batch_with_agents():
             file_paths = [info['file_path'] for info in file_infos]
             
-            # Use orchestrator to process batch query
+            # 并发进行多文件相关性检测
+            import asyncio
+            from backend.utils.relevance_matcher import relevance_matcher
+            from backend.utils.file_manager import file_manager
+            
+            batch_relevance_results = {}
+            
+            async def check_file_relevance(file_id, file_name):
+                """检查单个文件的相关性"""
+                try:
+                    api_logger.info(f"开始检查文件 {file_name} ({file_id}) 的相关性")
+                    text_analysis = file_manager.get_text_analysis(file_id)
+                    
+                    if text_analysis:
+                        relevance_result = relevance_matcher.match_query_to_sheets(query, text_analysis)
+                        api_logger.info(f"文件 {file_name} 相关性分析结果: {relevance_matcher.get_relevance_summary(relevance_result)}")
+                        return file_id, relevance_result
+                    else:
+                        api_logger.warning(f"文件 {file_name} ({file_id}) 没有文本分析数据")
+                        return file_id, None
+                except Exception as e:
+                    api_logger.error(f"文件 {file_name} ({file_id}) 相关性检测失败: {e}")
+                    return file_id, None
+            
+            # 并发检查所有文件的相关性
+            api_logger.info(f"开始并发检查 {len(file_ids)} 个文件的相关性")
+            tasks = [check_file_relevance(file_id, file_infos[i]['original_name']) for i, file_id in enumerate(file_ids)]
+            relevance_results = await asyncio.gather(*tasks, return_exceptions=True)
+            
+            # 处理相关性检测结果
+            relevant_files = []
+            all_matched_sheets = []
+            all_matched_keywords = []
+            
+            for result in relevance_results:
+                if isinstance(result, Exception):
+                    api_logger.error(f"相关性检测任务失败: {result}")
+                    continue
+                    
+                file_id, relevance_result = result
+                batch_relevance_results[file_id] = relevance_result
+                
+                if relevance_result and relevance_result.is_relevant:
+                    relevant_files.append(file_id)
+                    all_matched_sheets.extend(relevance_result.matched_sheets)
+                    all_matched_keywords.extend(relevance_result.matched_keywords)
+            
+            # 去重和统计
+            unique_matched_sheets = list(set(all_matched_sheets))
+            unique_matched_keywords = list(set(all_matched_keywords))
+            
+            api_logger.info(f"批量相关性检测完成: {len(relevant_files)}/{len(file_ids)} 个文件相关")
+            api_logger.info(f"匹配工作表: {unique_matched_sheets[:5]}...")  # 显示前5个
+            api_logger.info(f"匹配关键词: {unique_matched_keywords[:10]}...")  # 显示前10个
+            
+            # 如果有相关文件，优化查询上下文
+            enhanced_query = query
+            if relevant_files and unique_matched_keywords:
+                context_parts = []
+                if unique_matched_sheets:
+                    sheets_str = "、".join(unique_matched_sheets[:5])
+                    context_parts.append(f"重点关注工作表：{sheets_str}")
+                if unique_matched_keywords:
+                    keywords_str = "、".join(unique_matched_keywords[:8])
+                    context_parts.append(f"关键词：{keywords_str}")
+                
+                if context_parts:
+                    enhanced_query = f"{query}\n\n上下文提示：{' | '.join(context_parts)}"
+                    api_logger.info(f"批量查询已增强: {enhanced_query}")
+            
+            # Use orchestrator to process batch query with enhanced context
             result = await orchestrator.process_user_request(
-                user_request=f"{query} (分析这{len(file_ids)}个文件: {', '.join(file_names)})",
+                user_request=enhanced_query,
                 file_path=file_paths[0],  # Primary file
                 context={
                     'file_ids': file_ids,
                     'file_paths': file_paths,
                     'file_names': file_names,
                     'batch_query': True,
-                    'previous_processing': [info.get('process_result') for info in file_infos]
+                    'previous_processing': [info.get('process_result') for info in file_infos],
+                    'batch_relevance_analysis': {
+                        'total_files': len(file_ids),
+                        'relevant_files': relevant_files,
+                        'relevance_results': batch_relevance_results,
+                        'matched_sheets': unique_matched_sheets,
+                        'matched_keywords': unique_matched_keywords,
+                        'relevance_count': len(relevant_files)
+                    }
                 }
             )
             
@@ -1333,7 +1411,10 @@ def query_batch_data():
         # Run async batch query processing
         result = run_async(query_batch_with_agents())
         
-        return jsonify({
+        # 提取批量相关性分析结果
+        batch_relevance = result.get('context', {}).get('batch_relevance_analysis', {})
+        
+        response_data = {
             'success': True,
             'query': query,
             'file_ids': file_ids,
@@ -1343,7 +1424,44 @@ def query_batch_data():
             'workflow_steps': result.get('steps', []),
             'execution_time': result.get('execution_time', 0),
             'status': result.get('status', 'completed')
-        })
+        }
+        
+        # 添加批量相关性分析结果
+        if batch_relevance:
+            response_data['batch_relevance_analysis'] = {
+                'total_files': batch_relevance.get('total_files', len(file_ids)),
+                'relevant_files_count': batch_relevance.get('relevance_count', 0),
+                'relevant_file_ids': batch_relevance.get('relevant_files', []),
+                'matched_sheets': batch_relevance.get('matched_sheets', []),
+                'matched_keywords': batch_relevance.get('matched_keywords', []),
+                'summary': f"{batch_relevance.get('relevance_count', 0)}/{batch_relevance.get('total_files', len(file_ids))} 个文件与查询相关"
+            }
+            
+            # 为每个文件添加相关性详情
+            file_relevance_details = {}
+            relevance_results = batch_relevance.get('relevance_results', {})
+            for file_id in file_ids:
+                relevance_result = relevance_results.get(file_id)
+                if relevance_result:
+                    file_relevance_details[file_id] = {
+                        'is_relevant': relevance_result.is_relevant,
+                        'confidence_score': relevance_result.confidence_score,
+                        'matched_sheets': relevance_result.matched_sheets,
+                        'matched_keywords': relevance_result.matched_keywords,
+                        'method': relevance_result.method
+                    }
+                else:
+                    file_relevance_details[file_id] = {
+                        'is_relevant': False,
+                        'confidence_score': 0.0,
+                        'matched_sheets': [],
+                        'matched_keywords': [],
+                        'method': 'no_analysis'
+                    }
+            
+            response_data['file_relevance_details'] = file_relevance_details
+        
+        return jsonify(response_data)
         
     except Exception as e:
         return jsonify({'error': f'Batch query failed: {str(e)}'}), 500

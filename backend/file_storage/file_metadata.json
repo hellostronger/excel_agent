@@ -1,1246 +1,599 @@
 {
-  "bba6e20e-f7a3-46cb-8da9-4f591e2dd574": {
-    "file_id": "bba6e20e-f7a3-46cb-8da9-4f591e2dd574",
-    "original_name": "-_.xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\bba6e20e-f7a3-46cb-8da9-4f591e2dd574\\data.xlsx",
-    "size": 97358,
-    "upload_time": "2025-09-11T00:52:38.588128",
-    "processed": false,
-    "original_path": "C:\\Users\\strong\\AppData\\Local\\Temp\\tmpvgpuf45e\\bba6e20e-f7a3-46cb-8da9-4f591e2dd574_-_.xlsx",
-    "stored_at": "2025-09-11T00:52:38.591130",
-    "file_size": 97358,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\bba6e20e-f7a3-46cb-8da9-4f591e2dd574"
-  },
-  "9b279bc5-f901-49f5-89d2-8c0a3d69f0a4": {
-    "file_id": "9b279bc5-f901-49f5-89d2-8c0a3d69f0a4",
-    "original_name": "-_.xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\9b279bc5-f901-49f5-89d2-8c0a3d69f0a4\\data.xlsx",
-    "size": 97358,
-    "upload_time": "2025-09-11T00:58:19.119025",
-    "processed": false,
-    "original_path": "C:\\Users\\strong\\AppData\\Local\\Temp\\tmpdbjzz1ew\\9b279bc5-f901-49f5-89d2-8c0a3d69f0a4_-_.xlsx",
-    "stored_at": "2025-09-11T00:58:19.121027",
-    "file_size": 97358,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\9b279bc5-f901-49f5-89d2-8c0a3d69f0a4"
-  },
-  "f1fec260-9e27-48ce-bf53-2a4fd8c52b65": {
-    "file_id": "f1fec260-9e27-48ce-bf53-2a4fd8c52b65",
-    "original_name": "xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\f1fec260-9e27-48ce-bf53-2a4fd8c52b65\\data",
-    "size": 97358,
-    "upload_time": "2025-09-11T10:12:52.654709",
-    "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmpka6j9635\\f1fec260-9e27-48ce-bf53-2a4fd8c52b65_xlsx",
-    "stored_at": "2025-09-11T10:12:52.662654",
-    "file_size": 97358,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\f1fec260-9e27-48ce-bf53-2a4fd8c52b65"
-  },
-  "0970e7fc-01c4-47ab-a6da-25a3052a06d3": {
-    "file_id": "0970e7fc-01c4-47ab-a6da-25a3052a06d3",
-    "original_name": "xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\0970e7fc-01c4-47ab-a6da-25a3052a06d3\\data",
-    "size": 97358,
-    "upload_time": "2025-09-11T10:14:39.455202",
-    "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmp7hsmyis3\\0970e7fc-01c4-47ab-a6da-25a3052a06d3_xlsx",
-    "stored_at": "2025-09-11T10:14:39.462070",
-    "file_size": 97358,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\0970e7fc-01c4-47ab-a6da-25a3052a06d3"
-  },
-  "361be4da-d787-48ab-9180-86dc8d534039": {
-    "file_id": "361be4da-d787-48ab-9180-86dc8d534039",
-    "original_name": "xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\361be4da-d787-48ab-9180-86dc8d534039\\data",
-    "size": 97358,
-    "upload_time": "2025-09-11T10:21:54.453306",
-    "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmp40bri5w4\\361be4da-d787-48ab-9180-86dc8d534039_xlsx",
-    "stored_at": "2025-09-11T10:21:54.460331",
-    "file_size": 97358,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\361be4da-d787-48ab-9180-86dc8d534039"
-  },
-  "92f6c52e-c79b-4178-b953-6bcb19527a3e": {
-    "file_id": "92f6c52e-c79b-4178-b953-6bcb19527a3e",
-    "original_name": "xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\92f6c52e-c79b-4178-b953-6bcb19527a3e\\data",
-    "size": 97358,
-    "upload_time": "2025-09-11T10:25:59.819331",
-    "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmp37l2n4a8\\92f6c52e-c79b-4178-b953-6bcb19527a3e_xlsx",
-    "stored_at": "2025-09-11T10:25:59.833408",
-    "file_size": 97358,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\92f6c52e-c79b-4178-b953-6bcb19527a3e"
-  },
-  "03699743-d664-4ee3-aeb0-dedb9c010082": {
-    "file_id": "03699743-d664-4ee3-aeb0-dedb9c010082",
-    "original_name": "xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\03699743-d664-4ee3-aeb0-dedb9c010082\\data",
-    "size": 97358,
-    "upload_time": "2025-09-11T10:32:08.698179",
-    "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmpfug_4uw1\\03699743-d664-4ee3-aeb0-dedb9c010082_xlsx",
-    "stored_at": "2025-09-11T10:32:08.703674",
-    "file_size": 97358,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\03699743-d664-4ee3-aeb0-dedb9c010082"
-  },
-  "1e22e55a-3d5c-4255-b912-69de5cc57ebb": {
-    "file_id": "1e22e55a-3d5c-4255-b912-69de5cc57ebb",
-    "original_name": "xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\1e22e55a-3d5c-4255-b912-69de5cc57ebb\\data",
-    "size": 97358,
-    "upload_time": "2025-09-11T10:39:30.591706",
-    "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmpfug_4uw1\\1e22e55a-3d5c-4255-b912-69de5cc57ebb_xlsx",
-    "stored_at": "2025-09-11T10:39:30.599684",
-    "file_size": 97358,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\1e22e55a-3d5c-4255-b912-69de5cc57ebb"
-  },
-  "de3afa6c-4059-4e95-a3d3-9fc5d641e1c7": {
-    "file_id": "de3afa6c-4059-4e95-a3d3-9fc5d641e1c7",
-    "original_name": "xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\de3afa6c-4059-4e95-a3d3-9fc5d641e1c7\\data",
-    "size": 97358,
-    "upload_time": "2025-09-11T11:06:37.327439",
-    "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmpmab10bxr\\de3afa6c-4059-4e95-a3d3-9fc5d641e1c7_xlsx",
-    "stored_at": "2025-09-11T11:06:37.338179",
-    "file_size": 97358,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\de3afa6c-4059-4e95-a3d3-9fc5d641e1c7"
-  },
-  "2d733683-6177-460b-9c52-327456ca09d6": {
-    "file_id": "2d733683-6177-460b-9c52-327456ca09d6",
-    "original_name": "20252.xls",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\2d733683-6177-460b-9c52-327456ca09d6\\data.xls",
+  "2c6c85e1-3b77-45a9-b8c1-a7d335076624": {
+    "file_id": "2c6c85e1-3b77-45a9-b8c1-a7d335076624",
+    "original_name": "20252_-_.xls",
+    "file_path": "D:\\excel_agent\\backend\\file_storage\\2c6c85e1-3b77-45a9-b8c1-a7d335076624\\data.xls",
     "size": 1396224,
-    "upload_time": "2025-09-11T11:15:26.819340",
+    "upload_time": "2025-09-12T00:35:55.479768",
     "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmpl413we48\\2d733683-6177-460b-9c52-327456ca09d6_20252.xls",
-    "stored_at": "2025-09-11T11:15:26.828081",
+    "original_path": "C:\\Users\\strong\\AppData\\Local\\Temp\\tmpm6odgq2f\\2c6c85e1-3b77-45a9-b8c1-a7d335076624_20252_-_.xls",
+    "stored_at": "2025-09-12T00:35:55.482770",
     "file_size": 1396224,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\2d733683-6177-460b-9c52-327456ca09d6"
-  },
-  "9e9c13ed-e069-4aa5-ab2a-3d0d946be4d3": {
-    "file_id": "9e9c13ed-e069-4aa5-ab2a-3d0d946be4d3",
-    "original_name": "xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\9e9c13ed-e069-4aa5-ab2a-3d0d946be4d3\\data",
-    "size": 97358,
-    "upload_time": "2025-09-11T11:15:26.872179",
-    "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmpl413we48\\9e9c13ed-e069-4aa5-ab2a-3d0d946be4d3_xlsx",
-    "stored_at": "2025-09-11T11:15:26.879348",
-    "file_size": 97358,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\9e9c13ed-e069-4aa5-ab2a-3d0d946be4d3"
-  },
-  "d099c405-45a2-445b-bd62-a3be1e5172d3": {
-    "file_id": "d099c405-45a2-445b-bd62-a3be1e5172d3",
-    "original_name": "xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\d099c405-45a2-445b-bd62-a3be1e5172d3\\data",
-    "size": 97358,
-    "upload_time": "2025-09-11T11:18:07.064253",
-    "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmp8t3px02k\\d099c405-45a2-445b-bd62-a3be1e5172d3_xlsx",
-    "stored_at": "2025-09-11T11:18:07.074142",
-    "file_size": 97358,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\d099c405-45a2-445b-bd62-a3be1e5172d3"
-  },
-  "0c7b9ed2-1c92-4c56-8d08-8b27d23215a7": {
-    "file_id": "0c7b9ed2-1c92-4c56-8d08-8b27d23215a7",
-    "original_name": "xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\0c7b9ed2-1c92-4c56-8d08-8b27d23215a7\\data",
-    "size": 97358,
-    "upload_time": "2025-09-11T11:32:40.252745",
-    "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmpmqbfbfmg\\0c7b9ed2-1c92-4c56-8d08-8b27d23215a7_xlsx",
-    "stored_at": "2025-09-11T11:32:40.264216",
-    "file_size": 97358,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\0c7b9ed2-1c92-4c56-8d08-8b27d23215a7"
-  },
-  "c8723bfb-4ea3-4dfa-8d95-13e00d4d7ca0": {
-    "file_id": "c8723bfb-4ea3-4dfa-8d95-13e00d4d7ca0",
-    "original_name": "xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\c8723bfb-4ea3-4dfa-8d95-13e00d4d7ca0\\data",
-    "size": 97358,
-    "upload_time": "2025-09-11T11:38:57.328846",
-    "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmp_yb6chry\\c8723bfb-4ea3-4dfa-8d95-13e00d4d7ca0_xlsx",
-    "stored_at": "2025-09-11T11:38:57.338365",
-    "file_size": 97358,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\c8723bfb-4ea3-4dfa-8d95-13e00d4d7ca0"
-  },
-  "0977369f-67f4-45b6-87f3-fddf0bc62288": {
-    "file_id": "0977369f-67f4-45b6-87f3-fddf0bc62288",
-    "original_name": "xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\0977369f-67f4-45b6-87f3-fddf0bc62288\\data",
-    "size": 97358,
-    "upload_time": "2025-09-11T11:43:47.123158",
-    "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmpvpq8wwec\\0977369f-67f4-45b6-87f3-fddf0bc62288_xlsx",
-    "stored_at": "2025-09-11T11:43:47.139671",
-    "file_size": 97358,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\0977369f-67f4-45b6-87f3-fddf0bc62288"
-  },
-  "74afab3f-8510-4da3-9d50-bbf528a642bc": {
-    "file_id": "74afab3f-8510-4da3-9d50-bbf528a642bc",
-    "original_name": "1_.xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\74afab3f-8510-4da3-9d50-bbf528a642bc\\data.xlsx",
-    "size": 124826,
-    "upload_time": "2025-09-11T11:44:20.755098",
-    "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmpvpq8wwec\\74afab3f-8510-4da3-9d50-bbf528a642bc_1_.xlsx",
-    "stored_at": "2025-09-11T11:44:20.760085",
-    "file_size": 124826,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\74afab3f-8510-4da3-9d50-bbf528a642bc"
-  },
-  "8efea9c9-8db5-4ff5-b8d1-a596061ea8cb": {
-    "file_id": "8efea9c9-8db5-4ff5-b8d1-a596061ea8cb",
-    "original_name": "1_.xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\8efea9c9-8db5-4ff5-b8d1-a596061ea8cb\\data.xlsx",
-    "size": 124826,
-    "upload_time": "2025-09-11T12:10:39.609427",
-    "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmpchsmk1q_\\8efea9c9-8db5-4ff5-b8d1-a596061ea8cb_1_.xlsx",
-    "stored_at": "2025-09-11T12:10:39.631075",
-    "file_size": 124826,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\8efea9c9-8db5-4ff5-b8d1-a596061ea8cb"
-  },
-  "8578bfc0-f196-4e41-8d5d-e5b9174e7f06": {
-    "file_id": "8578bfc0-f196-4e41-8d5d-e5b9174e7f06",
-    "original_name": "1_.xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\8578bfc0-f196-4e41-8d5d-e5b9174e7f06\\data.xlsx",
-    "size": 124826,
-    "upload_time": "2025-09-11T14:36:46.697733",
-    "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmp2d3oa6kf\\8578bfc0-f196-4e41-8d5d-e5b9174e7f06_1_.xlsx",
-    "stored_at": "2025-09-11T14:36:46.701968",
-    "file_size": 124826,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\8578bfc0-f196-4e41-8d5d-e5b9174e7f06",
-    "text_analysis": {
-      "total_texts": 79,
-      "total_words": 415,
-      "unique_word_count": 196,
-      "top_words": {
-        "未见": 2,
-        "确认": 2,
-        "评分": 2,
-        "审核": 2,
-        "制表": 2,
-        "列为": 2,
-        "稽核": 2,
-        "成效": 2,
-        "方式": 2,
-        "二次": 2,
-        "优先": 2,
-        "邮件": 2,
-        "一次": 2,
-        "等级": 2,
-        "效果": 2,
-        "得分": 2,
-        "改善": 2,
-        "警告": 2,
-        "减量": 2,
-        "供应商": 2,
-        "NA": 2,
-        "说明": 2,
-        "动作": 2,
-        "评为": 2,
-        "资料": 2,
-        "资格": 2,
-        "每半年": 2,
-        "内容": 2,
-        "以上": 2,
-        "报告": 2,
-        "交付": 2,
-        "相关": 2,
-        "发出": 2,
-        "我司": 2,
-        "主导": 2,
-        "级者": 2,
-        "核准": 2,
-        "以下": 2,
-        "状况": 2,
-        "价格": 2,
-        "检讨": 2,
-        "品质": 2,
-        "AVL": 2,
-        "交期": 2,
-        "连续": 2,
-        "携带": 2,
-        "同一": 2,
-        "管控": 2,
-        "此家": 2,
-        "三次": 2
-      },
-      "keywords_by_sheet": {
-        "各廠商": [
-          [
-            "评核",
-            0.47439553582936506
-          ],
-          [
-            "被评",
-            0.34463984807301584
-          ],
-          [
-            "级者",
-            0.28463732149761906
-          ],
-          [
-            "减量",
-            0.26215014033571427
-          ],
-          [
-            "供应商",
-            0.24727651785619048
-          ],
-          [
-            "改善",
-            0.2273668040781746
-          ],
-          [
-            "辅导",
-            0.21948920059166666
-          ],
-          [
-            "评分",
-            0.19225422725238095
-          ],
-          [
-            "核为",
-            0.18975821433174603
-          ],
-          [
-            "品质",
-            0.1735709906490476
-          ]
-        ],
-        "扣分明細 ": [
-          [
-            "被评",
-            0.24956678653563216
-          ],
-          [
-            "进料",
-            0.21576522915344828
-          ],
-          [
-            "客诉",
-            0.20611668108448275
-          ],
-          [
-            "我司",
-            0.20611668108448275
-          ],
-          [
-            "级者",
-            0.20611668108448275
-          ],
-          [
-            "质量",
-            0.16652494970344825
-          ],
-          [
-            "物料",
-            0.16061569264327585
-          ],
-          [
-            "辅导",
-            0.15894045560086206
-          ],
-          [
-            "评鉴",
-            0.1374111207229885
-          ],
-          [
-            "單價",
-            0.1374111207229885
-          ]
-        ]
-      },
-      "sheet_summary": {
-        "各廠商": {
-          "text_count": 47,
-          "word_count": 177,
-          "unique_word_count": 120
-        },
-        "扣分明細 ": {
-          "text_count": 32,
-          "word_count": 238,
-          "unique_word_count": 154
-        }
-      }
-    },
-    "text_analyzed_at": "2025-09-11T14:36:47.757908"
-  },
-  "49402417-e3ce-458c-9082-e48feda5db8a": {
-    "file_id": "49402417-e3ce-458c-9082-e48feda5db8a",
-    "original_name": "xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\49402417-e3ce-458c-9082-e48feda5db8a\\data",
-    "size": 97358,
-    "upload_time": "2025-09-11T15:02:54.163048",
-    "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmp9w4dhjlf\\49402417-e3ce-458c-9082-e48feda5db8a_xlsx",
-    "stored_at": "2025-09-11T15:02:54.171771",
-    "file_size": 97358,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\49402417-e3ce-458c-9082-e48feda5db8a"
-  },
-  "d95346a0-d5f8-431c-868f-83ebc77dbc1a": {
-    "file_id": "d95346a0-d5f8-431c-868f-83ebc77dbc1a",
-    "original_name": "1_.xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\d95346a0-d5f8-431c-868f-83ebc77dbc1a\\data.xlsx",
-    "size": 124826,
-    "upload_time": "2025-09-11T15:03:54.664130",
-    "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmp9w4dhjlf\\d95346a0-d5f8-431c-868f-83ebc77dbc1a_1_.xlsx",
-    "stored_at": "2025-09-11T15:03:54.670116",
-    "file_size": 124826,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\d95346a0-d5f8-431c-868f-83ebc77dbc1a",
-    "markdown_path": "D:\\excel_agent\\backend\\file_storage\\d95346a0-d5f8-431c-868f-83ebc77dbc1a\\data.md",
-    "markdown_metadata_path": "D:\\excel_agent\\backend\\file_storage\\d95346a0-d5f8-431c-868f-83ebc77dbc1a\\data.metadata.json",
-    "markdown_converted_at": "2025-09-11T15:03:54.873771",
-    "html_path": "D:\\excel_agent\\backend\\file_storage\\d95346a0-d5f8-431c-868f-83ebc77dbc1a\\data.html",
-    "html_metadata_path": "D:\\excel_agent\\backend\\file_storage\\d95346a0-d5f8-431c-868f-83ebc77dbc1a\\data.metadata.json",
-    "html_converted_at": "2025-09-11T15:03:54.986624",
+    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\2c6c85e1-3b77-45a9-b8c1-a7d335076624",
+    "markdown_path": "D:\\excel_agent\\backend\\file_storage\\2c6c85e1-3b77-45a9-b8c1-a7d335076624\\data.md",
+    "markdown_metadata_path": "D:\\excel_agent\\backend\\file_storage\\2c6c85e1-3b77-45a9-b8c1-a7d335076624\\data.metadata.json",
+    "markdown_converted_at": "2025-09-12T00:35:55.516770",
+    "html_path": "D:\\excel_agent\\backend\\file_storage\\2c6c85e1-3b77-45a9-b8c1-a7d335076624\\data.html",
+    "html_metadata_path": "D:\\excel_agent\\backend\\file_storage\\2c6c85e1-3b77-45a9-b8c1-a7d335076624\\data.metadata.json",
+    "html_converted_at": "2025-09-12T00:35:55.528771",
     "format_conversions": {
       "markdown_success": true,
       "html_success": true,
-      "converted_at": "2025-09-11T15:03:54.987674"
+      "converted_at": "2025-09-12T00:35:55.528771"
     },
     "text_analysis": {
-      "total_texts": 79,
-      "total_words": 415,
-      "unique_word_count": 196,
+      "total_texts": 38,
+      "total_words": 157,
+      "unique_word_count": 107,
       "top_words": {
-        "确认": 2,
-        "采购": 2,
-        "计划": 2,
-        "当月": 2,
-        "交货": 2,
-        "报告": 2,
-        "正常": 2,
-        "相关": 2,
-        "未见": 2,
-        "得分": 2,
-        "我司": 2,
-        "携带": 2,
-        "三次": 2,
-        "交期": 2,
-        "两个": 2,
-        "资格": 2,
-        "被评": 2,
-        "对象": 2,
-        "方式": 2,
-        "供应商": 2,
-        "交付": 2,
-        "辅导": 2,
-        "核为": 2,
-        "价格": 2,
-        "以下": 2,
-        "审核": 2,
-        "评分": 2,
-        "不定期": 2,
-        "减量": 2,
-        "改善": 2,
-        "主导": 2,
-        "说明": 2,
-        "效果": 2,
-        "质量": 2,
-        "AVL": 2,
-        "级者": 2,
-        "连续": 2,
-        "NA": 2,
-        "制表": 2,
-        "交易": 2,
-        "期间": 2,
-        "资料": 2,
-        "表示": 2,
-        "列为": 2,
-        "此家": 2,
-        "厂商": 2,
-        "发出": 2,
-        "核准": 2,
-        "供应": 2,
-        "取消": 2
+        "加严": 1,
+        "表面": 1,
+        "方式": 1,
+        "资料": 1,
+        "服务": 1,
+        "口头": 1,
+        "检讨": 1,
+        "撞傷": 1,
+        "2.8": 1,
+        "三次": 1,
+        "核为": 1,
+        "减量": 1,
+        "以上": 1,
+        "科技": 1,
+        "报告": 1,
+        "我司": 1,
+        "发现": 1,
+        "瀚宇": 1,
+        "产品品质": 1,
+        "不定期": 1,
+        "月评": 1,
+        "品质": 1,
+        "总分": 1,
+        "進料": 1,
+        "邮件": 1,
+        "所得": 1,
+        "同一": 1,
+        "博德": 1,
+        "代码": 1,
+        "辅导": 1,
+        "江阴": 1,
+        "稽核": 1,
+        "三个": 1,
+        "厂商": 1,
+        "包商": 1,
+        "携带": 1,
+        "评鉴": 1,
+        "基板": 1,
+        "动作": 1,
+        "供应商": 1,
+        "檢驗": 1,
+        "级者": 1,
+        "交易": 1,
+        "质量": 1,
+        "主导": 1,
+        "期间": 1,
+        "交付": 1,
+        "PP": 1,
+        "物料": 1,
+        "优先": 1
       },
       "keywords_by_sheet": {
-        "各廠商": [
-          [
-            "评核",
-            0.47439553582936506
-          ],
+        "data": [
           [
             "被评",
-            0.34463984807301584
+            0.3680052615016949
           ],
           [
             "级者",
-            0.28463732149761906
-          ],
-          [
-            "减量",
-            0.26215014033571427
+            0.30393476702288136
           ],
           [
             "供应商",
-            0.24727651785619048
-          ],
-          [
-            "改善",
-            0.2273668040781746
+            0.26404102754135594
           ],
           [
             "辅导",
-            0.21948920059166666
+            0.23436982436059323
+          ],
+          [
+            "供应",
+            0.21318085601355932
           ],
           [
             "评分",
-            0.19225422725238095
-          ],
-          [
-            "核为",
-            0.18975821433174603
-          ],
-          [
-            "品质",
-            0.1735709906490476
-          ]
-        ],
-        "扣分明細 ": [
-          [
-            "被评",
-            0.24956678653563216
-          ],
-          [
-            "进料",
-            0.21576522915344828
-          ],
-          [
-            "客诉",
-            0.20611668108448275
-          ],
-          [
-            "我司",
-            0.20611668108448275
-          ],
-          [
-            "级者",
-            0.20611668108448275
-          ],
-          [
-            "质量",
-            0.16652494970344825
-          ],
-          [
-            "物料",
-            0.16061569264327585
-          ],
-          [
-            "辅导",
-            0.15894045560086206
+            0.20528841215084748
           ],
           [
             "评鉴",
-            0.1374111207229885
+            0.20262317801525423
           ],
           [
-            "單價",
-            0.1374111207229885
+            "進料",
+            0.20262317801525423
+          ],
+          [
+            "檢驗",
+            0.20262317801525423
+          ],
+          [
+            "發現",
+            0.20262317801525423
           ]
         ]
       },
       "sheet_summary": {
-        "各廠商": {
-          "text_count": 47,
-          "word_count": 177,
-          "unique_word_count": 120
-        },
-        "扣分明細 ": {
-          "text_count": 32,
-          "word_count": 238,
-          "unique_word_count": 154
+        "data": {
+          "text_count": 38,
+          "word_count": 157,
+          "unique_word_count": 107
         }
       }
     },
-    "text_analyzed_at": "2025-09-11T15:03:55.930651"
+    "text_analyzed_at": "2025-09-12T00:35:55.939234"
   },
-  "455bca56-26e9-4fce-a71c-3d6f2802dd3b": {
-    "file_id": "455bca56-26e9-4fce-a71c-3d6f2802dd3b",
-    "original_name": "xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\455bca56-26e9-4fce-a71c-3d6f2802dd3b\\data",
-    "size": 97358,
-    "upload_time": "2025-09-11T15:11:13.121434",
+  "d949676e-1557-4284-9736-8e62a78ca946": {
+    "file_id": "d949676e-1557-4284-9736-8e62a78ca946",
+    "original_name": "20252_-_.xls",
+    "file_path": "D:\\excel_agent\\backend\\file_storage\\d949676e-1557-4284-9736-8e62a78ca946\\data.xls",
+    "size": 1396224,
+    "upload_time": "2025-09-12T00:43:44.702555",
     "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmp9w4dhjlf\\455bca56-26e9-4fce-a71c-3d6f2802dd3b_xlsx",
-    "stored_at": "2025-09-11T15:11:13.128623",
-    "file_size": 97358,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\455bca56-26e9-4fce-a71c-3d6f2802dd3b"
-  },
-  "2cf9dbef-9b7e-4af5-a50e-4a7bafd240d0": {
-    "file_id": "2cf9dbef-9b7e-4af5-a50e-4a7bafd240d0",
-    "original_name": "xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\2cf9dbef-9b7e-4af5-a50e-4a7bafd240d0\\data",
-    "size": 97358,
-    "upload_time": "2025-09-11T15:16:58.802574",
-    "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmpjrol7d2k\\2cf9dbef-9b7e-4af5-a50e-4a7bafd240d0_xlsx",
-    "stored_at": "2025-09-11T15:16:58.812552",
-    "file_size": 97358,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\2cf9dbef-9b7e-4af5-a50e-4a7bafd240d0"
-  },
-  "a361b5ee-285e-494b-bda2-426ba6415b80": {
-    "file_id": "a361b5ee-285e-494b-bda2-426ba6415b80",
-    "original_name": "xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\a361b5ee-285e-494b-bda2-426ba6415b80\\data",
-    "size": 97358,
-    "upload_time": "2025-09-11T15:18:42.473689",
-    "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmppklj8c5p\\a361b5ee-285e-494b-bda2-426ba6415b80_xlsx",
-    "stored_at": "2025-09-11T15:18:42.481461",
-    "file_size": 97358,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\a361b5ee-285e-494b-bda2-426ba6415b80"
-  },
-  "f48bdad2-daec-4198-b0e2-b539aa9cb4f3": {
-    "file_id": "f48bdad2-daec-4198-b0e2-b539aa9cb4f3",
-    "original_name": "1_.xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\f48bdad2-daec-4198-b0e2-b539aa9cb4f3\\data.xlsx",
-    "size": 124826,
-    "upload_time": "2025-09-11T15:19:57.016805",
-    "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmppklj8c5p\\f48bdad2-daec-4198-b0e2-b539aa9cb4f3_1_.xlsx",
-    "stored_at": "2025-09-11T15:19:57.025425",
-    "file_size": 124826,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\f48bdad2-daec-4198-b0e2-b539aa9cb4f3",
-    "markdown_path": "D:\\excel_agent\\backend\\file_storage\\f48bdad2-daec-4198-b0e2-b539aa9cb4f3\\data.md",
-    "markdown_metadata_path": "D:\\excel_agent\\backend\\file_storage\\f48bdad2-daec-4198-b0e2-b539aa9cb4f3\\data.metadata.json",
-    "markdown_converted_at": "2025-09-11T15:19:57.272761",
-    "html_path": "D:\\excel_agent\\backend\\file_storage\\f48bdad2-daec-4198-b0e2-b539aa9cb4f3\\data.html",
-    "html_metadata_path": "D:\\excel_agent\\backend\\file_storage\\f48bdad2-daec-4198-b0e2-b539aa9cb4f3\\data.metadata.json",
-    "html_converted_at": "2025-09-11T15:19:57.582039",
+    "original_path": "C:\\Users\\strong\\AppData\\Local\\Temp\\tmp9y7b2jzn\\d949676e-1557-4284-9736-8e62a78ca946_20252_-_.xls",
+    "stored_at": "2025-09-12T00:43:44.704557",
+    "file_size": 1396224,
+    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\d949676e-1557-4284-9736-8e62a78ca946",
+    "markdown_path": "D:\\excel_agent\\backend\\file_storage\\d949676e-1557-4284-9736-8e62a78ca946\\data.md",
+    "markdown_metadata_path": "D:\\excel_agent\\backend\\file_storage\\d949676e-1557-4284-9736-8e62a78ca946\\data.metadata.json",
+    "markdown_converted_at": "2025-09-12T00:43:44.729556",
+    "html_path": "D:\\excel_agent\\backend\\file_storage\\d949676e-1557-4284-9736-8e62a78ca946\\data.html",
+    "html_metadata_path": "D:\\excel_agent\\backend\\file_storage\\d949676e-1557-4284-9736-8e62a78ca946\\data.metadata.json",
+    "html_converted_at": "2025-09-12T00:43:44.742028",
     "format_conversions": {
       "markdown_success": true,
       "html_success": true,
-      "converted_at": "2025-09-11T15:19:57.582544"
+      "converted_at": "2025-09-12T00:43:44.742028"
     },
     "text_analysis": {
-      "total_texts": 79,
-      "total_words": 415,
-      "unique_word_count": 196,
+      "total_texts": 38,
+      "total_words": 157,
+      "unique_word_count": 107,
       "top_words": {
-        "优先": 2,
-        "正常": 2,
-        "不定期": 2,
-        "邮件": 2,
-        "发现": 2,
-        "状况": 2,
-        "厂商": 2,
-        "一次": 2,
-        "产品品质": 2,
-        "资料": 2,
-        "内容": 2,
-        "包商": 2,
-        "等级": 2,
-        "核为": 2,
-        "主导": 2,
-        "质量": 2,
-        "级者": 2,
-        "三个": 2,
-        "发出": 2,
-        "同一": 2,
-        "交付": 2,
-        "当月": 2,
-        "动作": 2,
-        "未见": 2,
-        "警告": 2,
-        "供应商": 2,
-        "对象": 2,
-        "加严": 2,
-        "审核": 2,
-        "连续": 2,
-        "交易": 2,
-        "取消": 2,
-        "评为": 2,
-        "此家": 2,
-        "被评": 2,
-        "价格": 2,
-        "效果": 2,
-        "口头": 2,
-        "期间": 2,
-        "制表": 2,
-        "说明": 2,
-        "得分": 2,
-        "追踪": 2,
-        "表示": 2,
-        "评分": 2,
-        "以上": 2,
-        "以下": 2,
-        "列为": 2,
-        "管控": 2,
-        "成效": 2
+        "瀚宇": 1,
+        "綜合": 1,
+        "名称": 1,
+        "优先": 1,
+        "未见": 1,
+        "三次": 1,
+        "撞傷": 1,
+        "月份": 1,
+        "说明": 1,
+        "发出": 1,
+        "管控": 1,
+        "PP": 1,
+        "我司": 1,
+        "当月": 1,
+        "博德": 1,
+        "供应商": 1,
+        "物料": 1,
+        "效果": 1,
+        "以上": 1,
+        "月评": 1,
+        "二次": 1,
+        "表示": 1,
+        "次扣": 1,
+        "PREPREG": 1,
+        "列为": 1,
+        "服务": 1,
+        "供應商": 1,
+        "核为": 1,
+        "正常": 1,
+        "一次": 1,
+        "三个": 1,
+        "产品品质": 1,
+        "IQC": 1,
+        "成效": 1,
+        "每半年": 1,
+        "發現": 1,
+        "总分": 1,
+        "交期": 1,
+        "基板": 1,
+        "采购": 1,
+        "连续": 1,
+        "同一": 1,
+        "供应": 1,
+        "质量": 1,
+        "品质": 1,
+        "报告": 1,
+        "价格": 1,
+        "评为": 1,
+        "内容": 1,
+        "厂商": 1
       },
       "keywords_by_sheet": {
-        "各廠商": [
-          [
-            "评核",
-            0.47439553582936506
-          ],
+        "data": [
           [
             "被评",
-            0.34463984807301584
+            0.3680052615016949
           ],
           [
             "级者",
-            0.28463732149761906
-          ],
-          [
-            "减量",
-            0.26215014033571427
+            0.30393476702288136
           ],
           [
             "供应商",
-            0.24727651785619048
-          ],
-          [
-            "改善",
-            0.2273668040781746
+            0.26404102754135594
           ],
           [
             "辅导",
-            0.21948920059166666
+            0.23436982436059323
+          ],
+          [
+            "供应",
+            0.21318085601355932
           ],
           [
             "评分",
-            0.19225422725238095
-          ],
-          [
-            "核为",
-            0.18975821433174603
-          ],
-          [
-            "品质",
-            0.1735709906490476
-          ]
-        ],
-        "扣分明細 ": [
-          [
-            "被评",
-            0.24956678653563216
-          ],
-          [
-            "进料",
-            0.21576522915344828
-          ],
-          [
-            "客诉",
-            0.20611668108448275
-          ],
-          [
-            "我司",
-            0.20611668108448275
-          ],
-          [
-            "级者",
-            0.20611668108448275
-          ],
-          [
-            "质量",
-            0.16652494970344825
-          ],
-          [
-            "物料",
-            0.16061569264327585
-          ],
-          [
-            "辅导",
-            0.15894045560086206
+            0.20528841215084748
           ],
           [
             "评鉴",
-            0.1374111207229885
+            0.20262317801525423
           ],
           [
-            "單價",
-            0.1374111207229885
+            "進料",
+            0.20262317801525423
+          ],
+          [
+            "檢驗",
+            0.20262317801525423
+          ],
+          [
+            "發現",
+            0.20262317801525423
           ]
         ]
       },
       "sheet_summary": {
-        "各廠商": {
-          "text_count": 47,
-          "word_count": 177,
-          "unique_word_count": 120
-        },
-        "扣分明細 ": {
-          "text_count": 32,
-          "word_count": 238,
-          "unique_word_count": 154
+        "data": {
+          "text_count": 38,
+          "word_count": 157,
+          "unique_word_count": 107
         }
       }
     },
-    "text_analyzed_at": "2025-09-11T15:19:59.520417"
+    "text_analyzed_at": "2025-09-12T00:43:45.700110"
   },
-  "3603645a-3d63-401a-af0a-f0e32350bf4f": {
-    "file_id": "3603645a-3d63-401a-af0a-f0e32350bf4f",
-    "original_name": "1_.xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\3603645a-3d63-401a-af0a-f0e32350bf4f\\data.xlsx",
-    "size": 124826,
-    "upload_time": "2025-09-11T15:26:50.671289",
+  "2a0c3916-7e7f-4adf-af04-c954c52efea5": {
+    "file_id": "2a0c3916-7e7f-4adf-af04-c954c52efea5",
+    "original_name": "20252_-_.xls",
+    "file_path": "D:\\excel_agent\\backend\\file_storage\\2a0c3916-7e7f-4adf-af04-c954c52efea5\\data.xls",
+    "size": 1396224,
+    "upload_time": "2025-09-12T00:46:24.740190",
     "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmp0a2k3o78\\3603645a-3d63-401a-af0a-f0e32350bf4f_1_.xlsx",
-    "stored_at": "2025-09-11T15:26:50.680184",
-    "file_size": 124826,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\3603645a-3d63-401a-af0a-f0e32350bf4f",
-    "markdown_path": "D:\\excel_agent\\backend\\file_storage\\3603645a-3d63-401a-af0a-f0e32350bf4f\\data.md",
-    "markdown_metadata_path": "D:\\excel_agent\\backend\\file_storage\\3603645a-3d63-401a-af0a-f0e32350bf4f\\data.metadata.json",
-    "markdown_converted_at": "2025-09-11T15:26:50.830560",
-    "html_path": "D:\\excel_agent\\backend\\file_storage\\3603645a-3d63-401a-af0a-f0e32350bf4f\\data.html",
-    "html_metadata_path": "D:\\excel_agent\\backend\\file_storage\\3603645a-3d63-401a-af0a-f0e32350bf4f\\data.metadata.json",
-    "html_converted_at": "2025-09-11T15:26:50.925303",
+    "original_path": "C:\\Users\\strong\\AppData\\Local\\Temp\\tmpsjtd56fq\\2a0c3916-7e7f-4adf-af04-c954c52efea5_20252_-_.xls",
+    "stored_at": "2025-09-12T00:46:24.743310",
+    "file_size": 1396224,
+    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\2a0c3916-7e7f-4adf-af04-c954c52efea5",
+    "markdown_path": "D:\\excel_agent\\backend\\file_storage\\2a0c3916-7e7f-4adf-af04-c954c52efea5\\data.md",
+    "markdown_metadata_path": "D:\\excel_agent\\backend\\file_storage\\2a0c3916-7e7f-4adf-af04-c954c52efea5\\data.metadata.json",
+    "markdown_converted_at": "2025-09-12T00:46:24.766825",
+    "html_path": "D:\\excel_agent\\backend\\file_storage\\2a0c3916-7e7f-4adf-af04-c954c52efea5\\data.html",
+    "html_metadata_path": "D:\\excel_agent\\backend\\file_storage\\2a0c3916-7e7f-4adf-af04-c954c52efea5\\data.metadata.json",
+    "html_converted_at": "2025-09-12T00:46:24.779853",
     "format_conversions": {
       "markdown_success": true,
       "html_success": true,
-      "converted_at": "2025-09-11T15:26:50.926918"
+      "converted_at": "2025-09-12T00:46:24.779853"
     },
     "text_analysis": {
-      "total_texts": 79,
-      "total_words": 415,
-      "unique_word_count": 196,
+      "total_texts": 38,
+      "total_words": 157,
+      "unique_word_count": 107,
       "top_words": {
-        "期间": 2,
-        "制表": 2,
-        "效果": 2,
-        "以下": 2,
-        "核准": 2,
-        "工作日内": 2,
-        "邮件": 2,
-        "同一": 2,
-        "表示": 2,
-        "发出": 2,
-        "相关": 2,
-        "半年": 2,
-        "资料": 2,
-        "一次": 2,
-        "二次": 2,
-        "交期": 2,
-        "NA": 2,
-        "列为": 2,
-        "检讨": 2,
-        "报告": 2,
-        "计划": 2,
-        "供应": 2,
-        "状况": 2,
-        "厂商": 2,
-        "当月": 2,
-        "说明": 2,
-        "携带": 2,
-        "交货": 2,
-        "产品品质": 2,
-        "动作": 2,
-        "三个": 2,
-        "发现": 2,
-        "口头": 2,
-        "正常": 2,
-        "我司": 2,
-        "等级": 2,
-        "品质": 2,
-        "管控": 2,
-        "被评": 2,
-        "得分": 2,
-        "两个": 2,
-        "价格": 2,
-        "优先": 2,
-        "警告": 2,
-        "改善": 2,
-        "每半年": 2,
-        "辅导": 2,
-        "审核": 2,
-        "内容": 2,
-        "此家": 2
+        "邮件": 1,
+        "以上": 1,
+        "追踪": 1,
+        "包商": 1,
+        "方式": 1,
+        "扣分": 1,
+        "发出": 1,
+        "列为": 1,
+        "报告": 1,
+        "期间": 1,
+        "评为": 1,
+        "博德": 1,
+        "2.95": 1,
+        "警告": 1,
+        "物料": 1,
+        "被评": 1,
+        "效果": 1,
+        "供货商": 1,
+        "撞傷": 1,
+        "三个": 1,
+        "辅导": 1,
+        "交期": 1,
+        "基板": 1,
+        "同一": 1,
+        "二次": 1,
+        "相关": 1,
+        "厂商": 1,
+        "NA": 1,
+        "对象": 1,
+        "资料": 1,
+        "科技": 1,
+        "不定期": 1,
+        "品质": 1,
+        "交货": 1,
+        "内容": 1,
+        "江阴": 1,
+        "綜合": 1,
+        "表面": 1,
+        "1.5": 1,
+        "计划": 1,
+        "评鉴": 1,
+        "2.8": 1,
+        "PREPREG": 1,
+        "口头": 1,
+        "参照": 1,
+        "管控": 1,
+        "序号": 1,
+        "IQC": 1,
+        "我司": 1,
+        "携带": 1
       },
       "keywords_by_sheet": {
-        "各廠商": [
-          [
-            "评核",
-            0.47439553582936506
-          ],
+        "data": [
           [
             "被评",
-            0.34463984807301584
+            0.3680052615016949
           ],
           [
             "级者",
-            0.28463732149761906
-          ],
-          [
-            "减量",
-            0.26215014033571427
+            0.30393476702288136
           ],
           [
             "供应商",
-            0.24727651785619048
-          ],
-          [
-            "改善",
-            0.2273668040781746
+            0.26404102754135594
           ],
           [
             "辅导",
-            0.21948920059166666
+            0.23436982436059323
+          ],
+          [
+            "供应",
+            0.21318085601355932
           ],
           [
             "评分",
-            0.19225422725238095
-          ],
-          [
-            "核为",
-            0.18975821433174603
-          ],
-          [
-            "品质",
-            0.1735709906490476
-          ]
-        ],
-        "扣分明細 ": [
-          [
-            "被评",
-            0.24956678653563216
-          ],
-          [
-            "进料",
-            0.21576522915344828
-          ],
-          [
-            "客诉",
-            0.20611668108448275
-          ],
-          [
-            "我司",
-            0.20611668108448275
-          ],
-          [
-            "级者",
-            0.20611668108448275
-          ],
-          [
-            "质量",
-            0.16652494970344825
-          ],
-          [
-            "物料",
-            0.16061569264327585
-          ],
-          [
-            "辅导",
-            0.15894045560086206
+            0.20528841215084748
           ],
           [
             "评鉴",
-            0.1374111207229885
+            0.20262317801525423
           ],
           [
-            "單價",
-            0.1374111207229885
+            "進料",
+            0.20262317801525423
+          ],
+          [
+            "檢驗",
+            0.20262317801525423
+          ],
+          [
+            "發現",
+            0.20262317801525423
           ]
         ]
       },
       "sheet_summary": {
-        "各廠商": {
-          "text_count": 47,
-          "word_count": 177,
-          "unique_word_count": 120
-        },
-        "扣分明細 ": {
-          "text_count": 32,
-          "word_count": 238,
-          "unique_word_count": 154
+        "data": {
+          "text_count": 38,
+          "word_count": 157,
+          "unique_word_count": 107
         }
       }
     },
-    "text_analyzed_at": "2025-09-11T15:26:52.222331"
+    "text_analyzed_at": "2025-09-12T00:46:25.695311"
   },
-  "a16e686a-219b-4944-b8aa-a6ce41da98aa": {
-    "file_id": "a16e686a-219b-4944-b8aa-a6ce41da98aa",
-    "original_name": "xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\a16e686a-219b-4944-b8aa-a6ce41da98aa\\data",
-    "size": 97358,
-    "upload_time": "2025-09-11T15:26:50.938144",
+  "38041d8d-1779-4267-a9b5-bda94cdbfd6d": {
+    "file_id": "38041d8d-1779-4267-a9b5-bda94cdbfd6d",
+    "original_name": "20252_-_.xls",
+    "file_path": "D:\\excel_agent\\backend\\file_storage\\38041d8d-1779-4267-a9b5-bda94cdbfd6d\\data.xls",
+    "size": 1396224,
+    "upload_time": "2025-09-12T00:49:25.250870",
     "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmp0a2k3o78\\a16e686a-219b-4944-b8aa-a6ce41da98aa_xlsx",
-    "stored_at": "2025-09-11T15:26:50.944886",
-    "file_size": 97358,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\a16e686a-219b-4944-b8aa-a6ce41da98aa"
-  },
-  "66015b05-e5f7-4ca7-9934-9a0c98bcc5b0": {
-    "file_id": "66015b05-e5f7-4ca7-9934-9a0c98bcc5b0",
-    "original_name": "1_.xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\66015b05-e5f7-4ca7-9934-9a0c98bcc5b0\\data.xlsx",
-    "size": 124826,
-    "upload_time": "2025-09-11T15:57:43.382356",
-    "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmp4xvxn4w0\\66015b05-e5f7-4ca7-9934-9a0c98bcc5b0_1_.xlsx",
-    "stored_at": "2025-09-11T15:57:43.389851",
-    "file_size": 124826,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\66015b05-e5f7-4ca7-9934-9a0c98bcc5b0",
-    "markdown_path": "D:\\excel_agent\\backend\\file_storage\\66015b05-e5f7-4ca7-9934-9a0c98bcc5b0\\data.md",
-    "markdown_metadata_path": "D:\\excel_agent\\backend\\file_storage\\66015b05-e5f7-4ca7-9934-9a0c98bcc5b0\\data.metadata.json",
-    "markdown_converted_at": "2025-09-11T15:57:43.698511",
-    "html_path": "D:\\excel_agent\\backend\\file_storage\\66015b05-e5f7-4ca7-9934-9a0c98bcc5b0\\data.html",
-    "html_metadata_path": "D:\\excel_agent\\backend\\file_storage\\66015b05-e5f7-4ca7-9934-9a0c98bcc5b0\\data.metadata.json",
-    "html_converted_at": "2025-09-11T15:57:43.911427",
+    "original_path": "C:\\Users\\strong\\AppData\\Local\\Temp\\tmpnyimcxy0\\38041d8d-1779-4267-a9b5-bda94cdbfd6d_20252_-_.xls",
+    "stored_at": "2025-09-12T00:49:25.253871",
+    "file_size": 1396224,
+    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\38041d8d-1779-4267-a9b5-bda94cdbfd6d",
+    "markdown_path": "D:\\excel_agent\\backend\\file_storage\\38041d8d-1779-4267-a9b5-bda94cdbfd6d\\data.md",
+    "markdown_metadata_path": "D:\\excel_agent\\backend\\file_storage\\38041d8d-1779-4267-a9b5-bda94cdbfd6d\\data.metadata.json",
+    "markdown_converted_at": "2025-09-12T00:49:25.277869",
+    "html_path": "D:\\excel_agent\\backend\\file_storage\\38041d8d-1779-4267-a9b5-bda94cdbfd6d\\data.html",
+    "html_metadata_path": "D:\\excel_agent\\backend\\file_storage\\38041d8d-1779-4267-a9b5-bda94cdbfd6d\\data.metadata.json",
+    "html_converted_at": "2025-09-12T00:49:25.289866",
     "format_conversions": {
       "markdown_success": true,
       "html_success": true,
-      "converted_at": "2025-09-11T15:57:43.912429"
+      "converted_at": "2025-09-12T00:49:25.289866"
     },
     "text_analysis": {
-      "total_texts": 79,
-      "total_words": 415,
-      "unique_word_count": 196,
+      "total_texts": 38,
+      "total_words": 157,
+      "unique_word_count": 107,
       "top_words": {
-        "级者": 2,
-        "交付": 2,
-        "NA": 2,
-        "厂商": 2,
-        "对象": 2,
-        "包商": 2,
-        "口头": 2,
-        "说明": 2,
-        "价格": 2,
-        "得分": 2,
-        "三次": 2,
-        "表示": 2,
-        "成效": 2,
-        "确认": 2,
-        "产品品质": 2,
-        "半年": 2,
-        "以下": 2,
-        "稽核": 2,
-        "管控": 2,
-        "评为": 2,
-        "供应商": 2,
-        "交货": 2,
-        "交易": 2,
-        "二次": 2,
-        "追踪": 2,
-        "交期": 2,
-        "IQC": 2,
-        "同一": 2,
-        "计划": 2,
-        "等级": 2,
-        "以上": 2,
-        "取消": 2,
-        "加严": 2,
-        "质量": 2,
-        "不定期": 2,
-        "未见": 2,
-        "每半年": 2,
-        "内容": 2,
-        "评分": 2,
-        "资格": 2,
-        "核为": 2,
-        "供应": 2,
-        "改善": 2,
-        "方式": 2,
-        "报告": 2,
-        "AVL": 2,
-        "此家": 2,
-        "品质": 2,
-        "两个": 2,
-        "期间": 2
+        "确认": 1,
+        "检讨": 1,
+        "AVL": 1,
+        "交付": 1,
+        "优先": 1,
+        "序号": 1,
+        "2.8": 1,
+        "列为": 1,
+        "资格": 1,
+        "進料": 1,
+        "采购": 1,
+        "加严": 1,
+        "评为": 1,
+        "被评": 1,
+        "两个": 1,
+        "方式": 1,
+        "说明": 1,
+        "供应": 1,
+        "PREPREG": 1,
+        "连续": 1,
+        "工作日内": 1,
+        "包商": 1,
+        "厂商": 1,
+        "计划": 1,
+        "物料": 1,
+        "NA": 1,
+        "总分": 1,
+        "级者": 1,
+        "綜合": 1,
+        "等级": 1,
+        "效果": 1,
+        "内容": 1,
+        "名称": 1,
+        "以下": 1,
+        "当月": 1,
+        "博德": 1,
+        "表面": 1,
+        "三个": 1,
+        "表示": 1,
+        "资料": 1,
+        "1.5": 1,
+        "改善": 1,
+        "科技": 1,
+        "质量": 1,
+        "参照": 1,
+        "供应商": 1,
+        "所得": 1,
+        "正常": 1,
+        "警告": 1,
+        "IQC": 1
       },
       "keywords_by_sheet": {
-        "各廠商": [
-          [
-            "评核",
-            0.47439553582936506
-          ],
+        "data": [
           [
             "被评",
-            0.34463984807301584
+            0.3680052615016949
           ],
           [
             "级者",
-            0.28463732149761906
-          ],
-          [
-            "减量",
-            0.26215014033571427
+            0.30393476702288136
           ],
           [
             "供应商",
-            0.24727651785619048
-          ],
-          [
-            "改善",
-            0.2273668040781746
+            0.26404102754135594
           ],
           [
             "辅导",
-            0.21948920059166666
+            0.23436982436059323
+          ],
+          [
+            "供应",
+            0.21318085601355932
           ],
           [
             "评分",
-            0.19225422725238095
-          ],
-          [
-            "核为",
-            0.18975821433174603
-          ],
-          [
-            "品质",
-            0.1735709906490476
-          ]
-        ],
-        "扣分明細 ": [
-          [
-            "被评",
-            0.24956678653563216
-          ],
-          [
-            "进料",
-            0.21576522915344828
-          ],
-          [
-            "客诉",
-            0.20611668108448275
-          ],
-          [
-            "我司",
-            0.20611668108448275
-          ],
-          [
-            "级者",
-            0.20611668108448275
-          ],
-          [
-            "质量",
-            0.16652494970344825
-          ],
-          [
-            "物料",
-            0.16061569264327585
-          ],
-          [
-            "辅导",
-            0.15894045560086206
+            0.20528841215084748
           ],
           [
             "评鉴",
-            0.1374111207229885
+            0.20262317801525423
           ],
           [
-            "單價",
-            0.1374111207229885
+            "進料",
+            0.20262317801525423
+          ],
+          [
+            "檢驗",
+            0.20262317801525423
+          ],
+          [
+            "發現",
+            0.20262317801525423
           ]
         ]
       },
       "sheet_summary": {
-        "各廠商": {
-          "text_count": 47,
-          "word_count": 177,
-          "unique_word_count": 120
-        },
-        "扣分明細 ": {
-          "text_count": 32,
-          "word_count": 238,
-          "unique_word_count": 154
+        "data": {
+          "text_count": 38,
+          "word_count": 157,
+          "unique_word_count": 107
         }
       }
     },
-    "text_analyzed_at": "2025-09-11T15:57:45.639241"
+    "text_analyzed_at": "2025-09-12T00:49:26.377076"
   },
-  "b956d130-0b84-4cae-b830-e70b0febbdc8": {
-    "file_id": "b956d130-0b84-4cae-b830-e70b0febbdc8",
-    "original_name": "xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\b956d130-0b84-4cae-b830-e70b0febbdc8\\data",
-    "size": 97358,
-    "upload_time": "2025-09-11T15:57:43.928378",
+  "d1201790-7d3e-4487-a0c1-ac43a910fbc3": {
+    "file_id": "d1201790-7d3e-4487-a0c1-ac43a910fbc3",
+    "original_name": "1_-_.xlsx",
+    "file_path": "D:\\excel_agent\\backend\\file_storage\\d1201790-7d3e-4487-a0c1-ac43a910fbc3\\data.xlsx",
+    "size": 124774,
+    "upload_time": "2025-09-12T00:49:25.291867",
     "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmp4xvxn4w0\\b956d130-0b84-4cae-b830-e70b0febbdc8_xlsx",
-    "stored_at": "2025-09-11T15:57:43.936410",
-    "file_size": 97358,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\b956d130-0b84-4cae-b830-e70b0febbdc8"
+    "original_path": "C:\\Users\\strong\\AppData\\Local\\Temp\\tmpnyimcxy0\\d1201790-7d3e-4487-a0c1-ac43a910fbc3_1_-_.xlsx",
+    "stored_at": "2025-09-12T00:49:25.293869",
+    "file_size": 124774,
+    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\d1201790-7d3e-4487-a0c1-ac43a910fbc3",
+    "markdown_path": "D:\\excel_agent\\backend\\file_storage\\d1201790-7d3e-4487-a0c1-ac43a910fbc3\\data.md",
+    "markdown_metadata_path": "D:\\excel_agent\\backend\\file_storage\\d1201790-7d3e-4487-a0c1-ac43a910fbc3\\data.metadata.json",
+    "markdown_converted_at": "2025-09-12T00:49:25.330896",
+    "html_path": "D:\\excel_agent\\backend\\file_storage\\d1201790-7d3e-4487-a0c1-ac43a910fbc3\\data.html",
+    "html_metadata_path": "D:\\excel_agent\\backend\\file_storage\\d1201790-7d3e-4487-a0c1-ac43a910fbc3\\data.metadata.json",
+    "html_converted_at": "2025-09-12T00:49:25.363895",
+    "format_conversions": {
+      "markdown_success": true,
+      "html_success": true,
+      "converted_at": "2025-09-12T00:49:25.363895"
+    }
   },
-  "5626d176-b01d-41d5-9df8-15f69f58d414": {
-    "file_id": "5626d176-b01d-41d5-9df8-15f69f58d414",
-    "original_name": "xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\5626d176-b01d-41d5-9df8-15f69f58d414\\data",
+  "26d20dc2-4e1c-475e-93ff-a620bc6904e3": {
+    "file_id": "26d20dc2-4e1c-475e-93ff-a620bc6904e3",
+    "original_name": "-_.xlsx",
+    "file_path": "D:\\excel_agent\\backend\\file_storage\\26d20dc2-4e1c-475e-93ff-a620bc6904e3\\data.xlsx",
     "size": 97358,
-    "upload_time": "2025-09-11T16:05:53.343179",
+    "upload_time": "2025-09-12T00:49:25.366905",
     "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmptvsfr99a\\5626d176-b01d-41d5-9df8-15f69f58d414_xlsx",
-    "stored_at": "2025-09-11T16:05:53.349968",
+    "original_path": "C:\\Users\\strong\\AppData\\Local\\Temp\\tmpnyimcxy0\\26d20dc2-4e1c-475e-93ff-a620bc6904e3_-_.xlsx",
+    "stored_at": "2025-09-12T00:49:25.367907",
     "file_size": 97358,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\5626d176-b01d-41d5-9df8-15f69f58d414"
+    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\26d20dc2-4e1c-475e-93ff-a620bc6904e3",
+    "markdown_path": "D:\\excel_agent\\backend\\file_storage\\26d20dc2-4e1c-475e-93ff-a620bc6904e3\\data.md",
+    "markdown_metadata_path": "D:\\excel_agent\\backend\\file_storage\\26d20dc2-4e1c-475e-93ff-a620bc6904e3\\data.metadata.json",
+    "markdown_converted_at": "2025-09-12T00:49:25.386419",
+    "html_path": "D:\\excel_agent\\backend\\file_storage\\26d20dc2-4e1c-475e-93ff-a620bc6904e3\\data.html",
+    "html_metadata_path": "D:\\excel_agent\\backend\\file_storage\\26d20dc2-4e1c-475e-93ff-a620bc6904e3\\data.metadata.json",
+    "html_converted_at": "2025-09-12T00:49:25.402419",
+    "format_conversions": {
+      "markdown_success": true,
+      "html_success": true,
+      "converted_at": "2025-09-12T00:49:25.402419"
+    }
   },
-  "e7d744cd-d4e2-42eb-9142-cd60ea740b96": {
-    "file_id": "e7d744cd-d4e2-42eb-9142-cd60ea740b96",
-    "original_name": "xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\e7d744cd-d4e2-42eb-9142-cd60ea740b96\\data",
-    "size": 97358,
-    "upload_time": "2025-09-11T16:06:49.837477",
+  "d5706352-3c17-4f47-ae2f-9ef6249dc9df": {
+    "file_id": "d5706352-3c17-4f47-ae2f-9ef6249dc9df",
+    "original_name": "1_-_-_.xlsx",
+    "file_path": "D:\\excel_agent\\backend\\file_storage\\d5706352-3c17-4f47-ae2f-9ef6249dc9df\\data.xlsx",
+    "size": 124826,
+    "upload_time": "2025-09-12T00:49:25.404417",
     "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmptvsfr99a\\e7d744cd-d4e2-42eb-9142-cd60ea740b96_xlsx",
-    "stored_at": "2025-09-11T16:06:49.845300",
-    "file_size": 97358,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\e7d744cd-d4e2-42eb-9142-cd60ea740b96"
-  },
-  "fa99c849-6a5f-4e1d-b24d-5d5e34682a9f": {
-    "file_id": "fa99c849-6a5f-4e1d-b24d-5d5e34682a9f",
-    "original_name": "xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\fa99c849-6a5f-4e1d-b24d-5d5e34682a9f\\data",
-    "size": 97358,
-    "upload_time": "2025-09-11T16:10:56.910630",
-    "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmptvsfr99a\\fa99c849-6a5f-4e1d-b24d-5d5e34682a9f_xlsx",
-    "stored_at": "2025-09-11T16:10:56.918123",
-    "file_size": 97358,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\fa99c849-6a5f-4e1d-b24d-5d5e34682a9f"
-  },
-  "9822b9af-ef43-47d2-91e9-e0021c580143": {
-    "file_id": "9822b9af-ef43-47d2-91e9-e0021c580143",
-    "original_name": "xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\9822b9af-ef43-47d2-91e9-e0021c580143\\data",
-    "size": 97358,
-    "upload_time": "2025-09-11T16:16:21.163402",
-    "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmptvsfr99a\\9822b9af-ef43-47d2-91e9-e0021c580143_xlsx",
-    "stored_at": "2025-09-11T16:16:21.174369",
-    "file_size": 97358,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\9822b9af-ef43-47d2-91e9-e0021c580143"
-  },
-  "8405bb93-c599-4098-b2c1-12cd117f4293": {
-    "file_id": "8405bb93-c599-4098-b2c1-12cd117f4293",
-    "original_name": "xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\8405bb93-c599-4098-b2c1-12cd117f4293\\data",
-    "size": 97358,
-    "upload_time": "2025-09-11T16:28:09.656298",
-    "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmptvsfr99a\\8405bb93-c599-4098-b2c1-12cd117f4293_xlsx",
-    "stored_at": "2025-09-11T16:28:09.661286",
-    "file_size": 97358,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\8405bb93-c599-4098-b2c1-12cd117f4293"
-  },
-  "99aef651-cc1f-4a6d-8cc0-48090ad7a00b": {
-    "file_id": "99aef651-cc1f-4a6d-8cc0-48090ad7a00b",
-    "original_name": "xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\99aef651-cc1f-4a6d-8cc0-48090ad7a00b\\data",
-    "size": 97358,
-    "upload_time": "2025-09-11T16:46:37.238233",
-    "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmptvsfr99a\\99aef651-cc1f-4a6d-8cc0-48090ad7a00b_xlsx",
-    "stored_at": "2025-09-11T16:46:37.245214",
-    "file_size": 97358,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\99aef651-cc1f-4a6d-8cc0-48090ad7a00b"
-  },
-  "8918b4ab-746b-4e27-8203-88e30a273435": {
-    "file_id": "8918b4ab-746b-4e27-8203-88e30a273435",
-    "original_name": "xlsx",
-    "file_path": "D:\\excel_agent\\backend\\file_storage\\8918b4ab-746b-4e27-8203-88e30a273435\\data",
-    "size": 97358,
-    "upload_time": "2025-09-11T20:51:43.387283",
-    "processed": false,
-    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmpq6mgehds\\8918b4ab-746b-4e27-8203-88e30a273435_xlsx",
-    "stored_at": "2025-09-11T20:51:43.395261",
-    "file_size": 97358,
-    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\8918b4ab-746b-4e27-8203-88e30a273435"
+    "original_path": "C:\\Users\\strong\\AppData\\Local\\Temp\\tmpnyimcxy0\\d5706352-3c17-4f47-ae2f-9ef6249dc9df_1_-_-_.xlsx",
+    "stored_at": "2025-09-12T00:49:25.406420",
+    "file_size": 124826,
+    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\d5706352-3c17-4f47-ae2f-9ef6249dc9df",
+    "markdown_path": "D:\\excel_agent\\backend\\file_storage\\d5706352-3c17-4f47-ae2f-9ef6249dc9df\\data.md",
+    "markdown_metadata_path": "D:\\excel_agent\\backend\\file_storage\\d5706352-3c17-4f47-ae2f-9ef6249dc9df\\data.metadata.json",
+    "markdown_converted_at": "2025-09-12T00:49:25.442417",
+    "html_path": "D:\\excel_agent\\backend\\file_storage\\d5706352-3c17-4f47-ae2f-9ef6249dc9df\\data.html",
+    "html_metadata_path": "D:\\excel_agent\\backend\\file_storage\\d5706352-3c17-4f47-ae2f-9ef6249dc9df\\data.metadata.json",
+    "html_converted_at": "2025-09-12T00:49:25.476418",
+    "format_conversions": {
+      "markdown_success": true,
+      "html_success": true,
+      "converted_at": "2025-09-12T00:49:25.476418"
+    }
   }
 }
