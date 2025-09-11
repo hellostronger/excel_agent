@@ -7,7 +7,7 @@ import tempfile
 import uuid
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
 from flask import Flask, request, jsonify, render_template, g, Response
 from flask_cors import CORS
@@ -65,6 +65,7 @@ logging.basicConfig(
 )
 
 api_logger = logging.getLogger('excel_agent.api')
+logger = logging.getLogger('excel_agent.lightweight_processing')
 
 # 确保所有响应都使用UTF-8编码
 @app.after_request
@@ -1041,6 +1042,13 @@ def query_data():
                 
                 progress_tracker.update_step(query_request_id, "relevance_analysis", "completed", 
                                            f"相关性分析完成 - {relevance_matcher.get_relevance_summary(relevance_result)}")
+                
+                # 检查是否可以使用轻量级处理模式（通过markdown内容直接回答）
+                lightweight_result = check_lightweight_processing(file_id, relevance_result, query_request_id, query)
+                if lightweight_result:
+                    api_logger.info("使用轻量级处理模式，直接基于markdown内容回答")
+                    return jsonify(lightweight_result)
+                
             except Exception as e:
                 api_logger.error(f"相关性分析失败: {e}")
                 relevance_result = None
@@ -1468,6 +1476,210 @@ except Exception as e:
     print(f"\\n数据合并失败: {{e}}")
     print("文件结构可能不一致，需要单独分析")'''
         }
+
+
+def extract_sheet_markdown_content(file_id: str, sheet_names: List[str]) -> Optional[str]:
+    """
+    提取指定工作表的markdown内容
+    
+    Args:
+        file_id: 文件ID
+        sheet_names: 工作表名称列表
+        
+    Returns:
+        合并后的markdown内容，如果失败则返回None
+    """
+    try:
+        # 获取完整的markdown内容
+        full_markdown = file_manager.get_markdown_content(file_id)
+        if not full_markdown:
+            logger.warning(f"文件 {file_id} 没有markdown内容")
+            return None
+        
+        # 如果没有指定特定工作表，返回完整内容
+        if not sheet_names:
+            return full_markdown
+        
+        # 按工作表分割markdown内容
+        sheet_contents = []
+        lines = full_markdown.split('\n')
+        current_sheet = None
+        current_content = []
+        
+        for line in lines:
+            # 检查是否是工作表标题行 (## Sheet_Name)
+            if line.startswith('## ') and len(line) > 3:
+                # 保存之前的工作表内容
+                if current_sheet and current_sheet in sheet_names:
+                    sheet_contents.append('\n'.join(current_content))
+                
+                # 开始新的工作表
+                current_sheet = line[3:].strip()
+                current_content = [line]
+            else:
+                # 添加内容到当前工作表
+                current_content.append(line)
+        
+        # 处理最后一个工作表
+        if current_sheet and current_sheet in sheet_names:
+            sheet_contents.append('\n'.join(current_content))
+        
+        if sheet_contents:
+            return '\n\n---\n\n'.join(sheet_contents)
+        else:
+            # 如果没有找到匹配的工作表，返回完整内容的一部分
+            logger.warning(f"未找到指定工作表 {sheet_names}，返回完整内容")
+            return full_markdown[:20000]  # 限制在20k字符内
+            
+    except Exception as e:
+        logger.error(f"提取工作表markdown内容失败: {e}")
+        return None
+
+
+def check_lightweight_processing(file_id: str, relevance_result, request_id: str, query: str = "") -> Optional[Dict[str, Any]]:
+    """
+    检查是否可以使用轻量级处理模式（基于markdown内容直接回答）
+    
+    Args:
+        file_id: 文件ID
+        relevance_result: 相关性匹配结果
+        request_id: 请求ID
+        
+    Returns:
+        如果可以使用轻量级模式，返回响应数据；否则返回None
+    """
+    # 只有在明确匹配到特定工作表时才使用轻量级模式
+    if not (relevance_result and relevance_result.is_relevant and 
+            relevance_result.matched_sheets and 
+            relevance_result.method == 'keyword_match'):
+        return None
+    
+    try:
+        # 提取匹配工作表的markdown内容
+        progress_tracker.update_step(request_id, "lightweight_processing", "in_progress", "提取匹配工作表内容...")
+        
+        sheet_markdown = extract_sheet_markdown_content(file_id, relevance_result.matched_sheets)
+        if not sheet_markdown:
+            logger.warning("无法提取工作表markdown内容，回退到完整处理模式")
+            return None
+        
+        # 检查内容长度，如果超过2万字符，不使用轻量级模式
+        if len(sheet_markdown) > 20000:
+            logger.info(f"工作表内容过长 ({len(sheet_markdown)} 字符)，回退到完整处理模式")
+            return None
+        
+        logger.info(f"提取到 {len(relevance_result.matched_sheets)} 个工作表的内容，共 {len(sheet_markdown)} 字符")
+        
+        # 使用汇总agent处理
+        progress_tracker.update_step(request_id, "lightweight_processing", "in_progress", "使用汇总代理处理查询...")
+        
+        if AGENT_AVAILABLE:
+            # 使用真实的汇总agent
+            async def process_with_summarization_agent():
+                from excel_agent.agents.summarization import SummarizationAgent
+                from excel_agent.models.agents import SummarizationRequest
+                from excel_agent.models.base import AgentStatus
+                
+                try:
+                    summarization_agent = SummarizationAgent()
+                    
+                    # 构造汇总请求
+                    summarization_request = SummarizationRequest(
+                        agent_id="SummarizationAgent",
+                        text_content=sheet_markdown,
+                        query=query,
+                        context={
+                            'file_id': file_id,
+                            'matched_sheets': relevance_result.matched_sheets,
+                            'matched_keywords': relevance_result.matched_keywords,
+                            'processing_mode': 'lightweight_markdown'
+                        }
+                    )
+                    
+                    async with summarization_agent:
+                        response = await summarization_agent.execute_with_timeout(summarization_request)
+                    
+                    if response.status == AgentStatus.SUCCESS:
+                        return {
+                            'success': True,
+                            'request_id': request_id,
+                            'query': query,
+                            'response': response.result,
+                            'processing_mode': 'lightweight_markdown',
+                            'matched_sheets': relevance_result.matched_sheets,
+                            'matched_keywords': relevance_result.matched_keywords,
+                            'content_length': len(sheet_markdown),
+                            'execution_time': 0.5,
+                            'workflow_steps': [
+                                {'step': 'relevance_analysis', 'status': 'success', 'agent': 'RelevanceMatcher'},
+                                {'step': 'content_extraction', 'status': 'success', 'agent': 'MarkdownExtractor'},
+                                {'step': 'summarization', 'status': 'success', 'agent': 'SummarizationAgent'}
+                            ],
+                            'relevance_analysis': {
+                                'is_relevant': relevance_result.is_relevant,
+                                'confidence_score': relevance_result.confidence_score,
+                                'matched_sheets': relevance_result.matched_sheets,
+                                'matched_keywords': relevance_result.matched_keywords,
+                                'method': relevance_result.method
+                            }
+                        }
+                    else:
+                        logger.error(f"汇总代理执行失败: {response.error_log}")
+                        return None
+                        
+                except Exception as e:
+                    logger.error(f"汇总代理处理失败: {e}")
+                    return None
+            
+            result = run_async(process_with_summarization_agent())
+            if result:
+                progress_tracker.update_step(request_id, "lightweight_processing", "completed", "轻量级处理完成")
+                progress_tracker.finish_request(request_id, "completed", "查询处理完成！")
+                return result
+        
+        # 如果agent不可用，返回mock响应
+        progress_tracker.update_step(request_id, "lightweight_processing", "completed", "轻量级处理完成（模拟模式）")
+        progress_tracker.finish_request(request_id, "completed", "查询处理完成！")
+        
+        return {
+            'success': True,
+            'request_id': request_id,
+            'query': query,
+            'response': f"""基于匹配工作表的分析结果：
+
+匹配的工作表：{', '.join(relevance_result.matched_sheets)}
+匹配的关键词：{', '.join(relevance_result.matched_keywords)}
+
+根据提取的内容（{len(sheet_markdown)} 字符），这是一个关于 {', '.join(relevance_result.matched_keywords)} 的查询。
+
+内容摘要：
+{sheet_markdown[:500]}...
+
+由于系统当前运行在演示模式下，这是一个模拟回答。实际部署时会使用AI汇总代理提供更详细的分析。""",
+            'processing_mode': 'lightweight_markdown_mock',
+            'matched_sheets': relevance_result.matched_sheets,
+            'matched_keywords': relevance_result.matched_keywords,
+            'content_length': len(sheet_markdown),
+            'mock_mode': True,
+            'execution_time': 0.3,
+            'workflow_steps': [
+                {'step': 'relevance_analysis', 'status': 'success', 'agent': 'RelevanceMatcher'},
+                {'step': 'content_extraction', 'status': 'success', 'agent': 'MarkdownExtractor'},
+                {'step': 'summarization', 'status': 'success', 'agent': 'SummarizationAgent (Mock)'}
+            ],
+            'relevance_analysis': {
+                'is_relevant': relevance_result.is_relevant,
+                'confidence_score': relevance_result.confidence_score,
+                'matched_sheets': relevance_result.matched_sheets,
+                'matched_keywords': relevance_result.matched_keywords,
+                'method': relevance_result.method
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"轻量级处理失败: {e}")
+        progress_tracker.update_step(request_id, "lightweight_processing", "failed", f"轻量级处理失败: {str(e)}")
+        return None
 
 
 def generate_mock_response(query, file_info):

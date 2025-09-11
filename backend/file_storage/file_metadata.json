@@ -1230,5 +1230,17 @@
     "stored_at": "2025-09-11T16:46:37.245214",
     "file_size": 97358,
     "storage_dir": "D:\\excel_agent\\backend\\file_storage\\99aef651-cc1f-4a6d-8cc0-48090ad7a00b"
+  },
+  "8918b4ab-746b-4e27-8203-88e30a273435": {
+    "file_id": "8918b4ab-746b-4e27-8203-88e30a273435",
+    "original_name": "xlsx",
+    "file_path": "D:\\excel_agent\\backend\\file_storage\\8918b4ab-746b-4e27-8203-88e30a273435\\data",
+    "size": 97358,
+    "upload_time": "2025-09-11T20:51:43.387283",
+    "processed": false,
+    "original_path": "C:\\Users\\Strong\\AppData\\Local\\Temp\\tmpq6mgehds\\8918b4ab-746b-4e27-8203-88e30a273435_xlsx",
+    "stored_at": "2025-09-11T20:51:43.395261",
+    "file_size": 97358,
+    "storage_dir": "D:\\excel_agent\\backend\\file_storage\\8918b4ab-746b-4e27-8203-88e30a273435"
   }
 }

@@ -113,9 +113,11 @@ class ExecutionResponse(AgentResponse):
 # Summarization Agent Models
 class SummarizationRequest(AgentRequest):
     """Request for Summarization Agent."""
-    file_id: str
-    sheet_name: str
+    file_id: Optional[str] = None
+    sheet_name: Optional[str] = None
     max_rows: int = 100
+    text_content: Optional[str] = None  # 直接提供文本内容
+    query: Optional[str] = None  # 用户查询，用于上下文相关的汇总
 
 
 class SummarizationResponse(AgentResponse):
