@@ -171,7 +171,7 @@ class ExecutionAgent(BaseAgent):
         safe_builtins = {
             'len', 'range', 'enumerate', 'zip', 'list', 'dict', 'set', 'tuple',
             'str', 'int', 'float', 'bool', 'min', 'max', 'sum', 'sorted',
-            'print', 'type', 'isinstance', 'hasattr', 'getattr'
+            'print', 'type', 'isinstance', 'hasattr', 'getattr', '__import__'
         }
         
         # Create restricted builtins

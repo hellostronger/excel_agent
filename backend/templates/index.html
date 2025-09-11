@@ -69,6 +69,647 @@
             padding: 30px;
             min-height: 600px;
         }
+        
+        .chat-container {
+            grid-column: 1 / -1;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+            position: relative;
+        }
+        
+        .chat-header {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px 10px 0 0;
+            border-bottom: 2px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            overflow-y: auto;
+            min-height: 400px;
+            max-height: 400px;
+            border-left: 1px solid #dee2e6;
+            border-right: 1px solid #dee2e6;
+        }
+        
+        .chat-input-area {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 0 0 10px 10px;
+            border-top: 2px solid #dee2e6;
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 25px;
+            font-size: 14px;
+            resize: none;
+            min-height: 20px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+        
+        .chat-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        
+        .chat-send-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+        
+        .chat-send-btn:hover:not(:disabled) {
+            background: #45a049;
+        }
+        
+        .chat-send-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .message.user {
+            flex-direction: row-reverse;
+        }
+        
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        
+        .message.user .message-avatar {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .message.assistant .message-avatar {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .message.system .message-avatar {
+            background: #FF9800;
+            color: white;
+        }
+        
+        .message-content {
+            max-width: 70%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+        
+        .message.user .message-content {
+            background: #4CAF50;
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .message.assistant .message-content {
+            background: #e3f2fd;
+            color: #333;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .message.system .message-content {
+            background: #fff3e0;
+            color: #e65100;
+            border-bottom-left-radius: 5px;
+            border-left: 3px solid #FF9800;
+        }
+        
+        .message-time {
+            font-size: 11px;
+            color: #999;
+            margin-top: 5px;
+            text-align: center;
+        }
+        
+        .thinking-indicator {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .thinking-indicator.show {
+            display: flex;
+        }
+        
+        .thinking-dots {
+            display: flex;
+            gap: 3px;
+        }
+        
+        .thinking-dot {
+            width: 6px;
+            height: 6px;
+            background: #666;
+            border-radius: 50%;
+            animation: thinking 1.5s ease-in-out infinite;
+        }
+        
+        .thinking-dot:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+        
+        .thinking-dot:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+        
+        @keyframes thinking {
+            0%, 60%, 100% { opacity: 0.3; }
+            30% { opacity: 1; }
+        }
+        
+        /* Progress indicator styles */
+        .progress-indicator {
+            display: none;
+            background: white;
+            margin: 15px 0;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-left: 4px solid #4CAF50;
+            animation: slideIn 0.3s ease-out;
+            position: relative;
+        }
+        
+        .progress-indicator.show {
+            display: block;
+        }
+
+        .progress-indicator.completed {
+            border-left: 4px solid #28a745;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            max-height: 100px;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            cursor: pointer;
+        }
+
+        .progress-indicator.completed.expanded {
+            max-height: none;
+            cursor: default;
+        }
+
+        .progress-toggle-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .progress-toggle-btn:hover {
+            background: #218838;
+            transform: scale(1.1);
+        }
+
+        .progress-indicator.completed .progress-toggle-btn {
+            background: #6c757d;
+        }
+
+        .progress-indicator.completed .progress-toggle-btn:hover {
+            background: #5a6268;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .progress-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .progress-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #2196F3;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .progress-title {
+            flex: 1;
+        }
+        
+        .progress-title h4 {
+            margin: 0;
+            font-size: 16px;
+            color: #333;
+        }
+        
+        .progress-title p {
+            margin: 5px 0 0 0;
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .progress-bar-container {
+            background: #f0f0f0;
+            border-radius: 10px;
+            height: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            width: 0%;
+            transition: width 0.5s ease-out;
+            border-radius: 10px;
+        }
+        
+        .progress-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .progress-step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .progress-step.completed {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .progress-step.in-progress {
+            background: #fff3e0;
+            color: #e65100;
+            animation: pulse 2s infinite;
+        }
+        
+        .progress-step.failed {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .progress-step.warning {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .progress-step-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        .progress-step.pending .progress-step-icon {
+            background: #ccc;
+            color: white;
+        }
+        
+        .progress-step.in-progress .progress-step-icon {
+            background: #ff9800;
+            color: white;
+            animation: spin 1s linear infinite;
+        }
+        
+        .progress-step.completed .progress-step-icon {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .progress-step.failed .progress-step-icon {
+            background: #f44336;
+            color: white;
+        }
+        
+        .progress-step.warning .progress-step-icon {
+            background: #ff9800;
+            color: white;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .progress-step-content {
+            flex: 1;
+        }
+        
+        .progress-step-name {
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+        
+        .progress-step-description {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .progress-step-agent {
+            font-size: 11px;
+            color: #666;
+            background: #e0e0e0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-left: 10px;
+        }
+
+        .progress-step-details {
+            margin-top: 10px;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-size: 12px;
+            border-left: 3px solid #dee2e6;
+            display: none;
+        }
+
+        .progress-step.expanded .progress-step-details {
+            display: block;
+        }
+
+        .step-input-output {
+            margin: 5px 0;
+        }
+
+        .step-input-output strong {
+            color: #495057;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        .step-data {
+            background: white;
+            padding: 6px 8px;
+            border-radius: 3px;
+            border: 1px solid #dee2e6;
+            font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+            font-size: 11px;
+            max-height: 100px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .progress-step-expand-btn {
+            background: none;
+            border: none;
+            color: #6c757d;
+            cursor: pointer;
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            transition: all 0.2s;
+            margin-left: 8px;
+        }
+
+        .progress-step-expand-btn:hover {
+            background: #e9ecef;
+            color: #495057;
+        }
+        
+        .welcome-message {
+            text-align: center;
+            color: #666;
+            padding: 40px 20px;
+            font-style: italic;
+        }
+        
+        .chat-disabled-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            z-index: 10;
+        }
+        
+        .chat-disabled-overlay.show {
+            display: flex;
+        }
+
+        .preview-controls {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            border: 1px solid #dee2e6;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .control-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .control-select {
+            padding: 6px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            background: white;
+            font-size: 14px;
+            min-width: 150px;
+            cursor: pointer;
+        }
+
+        .control-select:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+        }
+
+        .control-select:disabled {
+            background: #f8f9fa;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .control-btn {
+            padding: 6px 12px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background 0.3s;
+        }
+
+        .control-btn:hover:not(:disabled) {
+            background: #45a049;
+        }
+
+        .control-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .control-btn.secondary {
+            background: #6c757d;
+        }
+
+        .control-btn.secondary:hover:not(:disabled) {
+            background: #5a6268;
+        }
+
+        .preview-info {
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 13px;
+            color: #6c757d;
+            border-left: 3px solid #4CAF50;
+        }
+
+        .preview-loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .preview-loading.show {
+            display: block;
+        }
+
+        .preview-loading .spinner {
+            width: 30px;
+            height: 30px;
+            margin: 0 auto 15px;
+        }
+
+        .file-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #dee2e6;
+            overflow-x: auto;
+        }
+
+        .file-tab {
+            padding: 8px 16px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            font-size: 14px;
+            color: #6c757d;
+            white-space: nowrap;
+            transition: all 0.3s;
+        }
+
+        .file-tab.active {
+            color: #4CAF50;
+            border-bottom-color: #4CAF50;
+        }
+
+        .file-tab:hover:not(.active) {
+            color: #495057;
+        }
 
         .upload-section {
             background: #f8f9fa;
@@ -329,6 +970,226 @@
             margin-bottom: 20px;
         }
 
+        /* Keywords analysis styles */
+        .keywords-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .keywords-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .keywords-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .keywords-refresh-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background 0.3s;
+        }
+
+        .keywords-refresh-btn:hover:not(:disabled) {
+            background: #45a049;
+        }
+
+        .keywords-refresh-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .keywords-summary {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .keywords-summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #6c757d;
+            text-transform: uppercase;
+        }
+
+        .sheet-keywords {
+            margin-bottom: 30px;
+        }
+
+        .sheet-header {
+            background: #e3f2fd;
+            padding: 12px 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sheet-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1565C0;
+        }
+
+        .sheet-stats {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .keywords-section {
+            margin-bottom: 20px;
+        }
+
+        .keywords-section h4 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 14px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 5px;
+        }
+
+        .keyword-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .keyword-tag {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .keyword-tag:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .keyword-weight {
+            background: rgba(255,255,255,0.2);
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .top-words-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .word-item {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 3px solid #4CAF50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .word-text {
+            font-weight: 500;
+        }
+
+        .word-count {
+            background: #4CAF50;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .keywords-loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .keywords-loading.show {
+            display: block;
+        }
+
+        .keywords-error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #f44336;
+            text-align: center;
+        }
+
+        .no-keywords {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px dashed #dee2e6;
+        }
+
+        @media (max-width: 768px) {
+            .keywords-summary-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .top-words-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .keyword-tags {
+                justify-content: center;
+            }
+        }
+
         @media (max-width: 768px) {
             .main-content {
                 grid-template-columns: 1fr;
@@ -336,6 +1197,35 @@
             
             .header h1 {
                 font-size: 2em;
+            }
+            
+            .preview-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .control-group {
+                width: 100%;
+            }
+            
+            .control-select {
+                min-width: unset;
+                width: 100%;
+            }
+            
+            .control-buttons {
+                justify-content: center;
+                margin-top: 10px;
+            }
+            
+            .file-tabs {
+                flex-wrap: wrap;
+            }
+            
+            .file-tab {
+                flex: 1;
+                min-width: 120px;
+                text-align: center;
             }
         }
     </style>
@@ -361,15 +1251,15 @@
                 <div class="upload-zone">
                     <div class="upload-icon">📁</div>
                     <h3>上传Excel文件</h3>
-                    <p>拖拽文件到这里或点击选择文件</p>
+                    <p>拖拽文件到这里或点击选择文件（支持多选）</p>
                     <p style="color: #6c757d; font-size: 14px; margin-top: 10px;">
-                        支持格式: .xlsx, .xls, .xlsm (最大50MB)
+                        支持格式: .xlsx, .xls, .xlsm (最大50MB每个)
                     </p>
                 </div>
                 
-                <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls,.xlsm">
+                <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls,.xlsm" multiple>
                 <button class="upload-btn" id="uploadBtn" onclick="document.getElementById('fileInput').click()">
-                    选择文件
+                    选择文件（支持多选）
                 </button>
 
                 <div class="file-info" id="fileInfo">
@@ -383,80 +1273,184 @@
                 </div>
             </div>
 
-            <!-- 查询区域 -->
+            <!-- 示例问题区域 -->
             <div class="query-section">
-                <h3>💬 智能问答</h3>
-                <textarea 
-                    class="query-input" 
-                    id="queryInput" 
-                    placeholder="请输入你想了解的问题，例如：&#10;• 这个表格有多少行数据？&#10;• 销售额最高的月份是哪个？&#10;• 帮我分析一下产品类别的分布情况&#10;• 找出异常值或离群点"
-                    disabled
-                ></textarea>
-                
-                <button class="query-btn" id="queryBtn" onclick="submitQuery()" disabled>
-                    🚀 开始分析
-                </button>
-
+                <h3>💡 示例问题</h3>
+                <p style="color: #6c757d; margin-bottom: 15px;">点击下面的问题快速开始对话：</p>
                 <div class="sample-queries">
-                    <h4>💡 示例问题</h4>
-                    <div class="sample-query" onclick="setQuery('请帮我分析这个表格的基本统计信息')">
+                    <div class="sample-query" onclick="sendQuickQuestion('请帮我分析这个表格的基本统计信息')">
                         📈 请帮我分析这个表格的基本统计信息
                     </div>
-                    <div class="sample-query" onclick="setQuery('找出数据中的异常值和离群点')">
+                    <div class="sample-query" onclick="sendQuickQuestion('找出数据中的异常值和离群点')">
                         🔍 找出数据中的异常值和离群点
                     </div>
-                    <div class="sample-query" onclick="setQuery('各个数值列之间有什么关联关系？')">
+                    <div class="sample-query" onclick="sendQuickQuestion('各个数值列之间有什么关联关系？')">
                         🔗 各个数值列之间有什么关联关系？
                     </div>
-                    <div class="sample-query" onclick="setQuery('生成一个数据可视化图表')">
+                    <div class="sample-query" onclick="sendQuickQuestion('生成一个数据可视化图表')">
                         📊 生成一个数据可视化图表
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 响应区域 -->
+        <!-- 智能问答对话区域 -->
+        <div class="chat-container" id="chatContainer">
+            <div class="chat-disabled-overlay" id="chatDisabledOverlay">
+                <div style="text-align: center; color: #666;">
+                    <div style="font-size: 48px; margin-bottom: 15px;">📁</div>
+                    <h3>请先上传Excel文件</h3>
+                    <p>上传并处理完Excel文件后即可开始智能问答</p>
+                </div>
+            </div>
+            
+            <div class="chat-header">
+                <div class="message-avatar" style="background: #2196F3; color: white;">🤖</div>
+                <div>
+                    <h3 style="margin: 0; color: #333;">💬 Excel智能助手</h3>
+                    <p style="margin: 0; font-size: 14px; color: #666;">基于AI的数据分析问答系统</p>
+                </div>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="welcome-message" id="welcomeMessage">
+                    <div style="font-size: 48px; margin-bottom: 15px;">👋</div>
+                    <h3>欢迎使用Excel智能助手</h3>
+                    <p>我可以帮您：</p>
+                    <ul style="text-align: left; display: inline-block; margin-top: 15px;">
+                        <li>📊 分析数据统计信息</li>
+                        <li>🔍 检测异常值和离群点</li>
+                        <li>📈 分析数据趋势和关联性</li>
+                        <li>📋 提供数据清洗建议</li>
+                        <li>🎨 生成可视化图表</li>
+                    </ul>
+                    <p style="margin-top: 20px;">请先上传Excel文件，然后开始对话吧！</p>
+                </div>
+                
+                <div class="thinking-indicator" id="thinkingIndicator">
+                    <div class="message-avatar" style="background: #2196F3; color: white;">🤖</div>
+                    <div>正在分析中</div>
+                    <div class="thinking-dots">
+                        <div class="thinking-dot"></div>
+                        <div class="thinking-dot"></div>
+                        <div class="thinking-dot"></div>
+                    </div>
+                </div>
+                
+                <!-- Real-time Progress Indicator -->
+                <div class="progress-indicator" id="progressIndicator">
+                    <button class="progress-toggle-btn" id="progressToggleBtn" onclick="toggleProgressDetails()" style="display: none;">
+                        ▼
+                    </button>
+                    
+                    <div class="progress-header">
+                        <div class="progress-avatar">🤖</div>
+                        <div class="progress-title">
+                            <h4 id="progressTitle">正在处理您的请求...</h4>
+                            <p id="progressMessage">初始化中...</p>
+                        </div>
+                        <div class="progress-percentage" id="progressPercentage">0%</div>
+                    </div>
+                    
+                    <div class="progress-bar-container" id="progressBarContainer">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+                    
+                    <div class="progress-steps" id="progressSteps">
+                        <!-- Progress steps will be dynamically populated -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-input-area">
+                <textarea 
+                    class="chat-input" 
+                    id="chatInput" 
+                    placeholder="请输入您的问题..."
+                    disabled
+                    onkeydown="handleChatKeyDown(event)"
+                ></textarea>
+                <button class="chat-send-btn" id="chatSendBtn" onclick="sendChatMessage()" disabled>
+                    ➤
+                </button>
+            </div>
+        </div>
+        
+        <!-- 数据预览和代码生成区域 -->
         <div class="response-section">
             <div class="tabs">
-                <button class="tab active" onclick="switchTab('response')">📋 分析结果</button>
-                <button class="tab" onclick="switchTab('data')">📊 数据预览</button>
+                <button class="tab active" onclick="switchTab('data')">📊 数据预览</button>
+                <button class="tab" onclick="switchTab('keywords')">🔤 关键词分析</button>
                 <button class="tab" onclick="switchTab('code')">💻 生成代码</button>
             </div>
 
-            <div id="responseTab" class="tab-content active">
-                <div class="loading" id="loading">
-                    <div class="spinner"></div>
-                    <p>AI正在分析中，请稍候...</p>
+            <div id="dataTab" class="tab-content active">
+                <!-- 文件选择标签页（支持多文件时显示） -->
+                <div id="fileTabs" class="file-tabs" style="display: none;">
+                    <!-- 动态生成文件标签页 -->
                 </div>
-                <div class="response-content" id="responseContent">
-                    👋 欢迎使用Excel智能分析系统！
+                
+                <!-- 预览控制器 -->
+                <div id="previewControls" class="preview-controls" style="display: none;">
+                    <div class="control-group">
+                        <label class="control-label">工作表:</label>
+                        <select id="sheetSelect" class="control-select">
+                            <option value="">选择工作表...</option>
+                        </select>
+                    </div>
                     
-请按以下步骤开始：
-1. 上传您的Excel文件
-2. 等待文件处理完成
-3. 在右侧输入您的问题
-4. 点击"开始分析"获得AI回复
-
-系统支持：
-• 📊 数据统计分析
-• 🔍 异常值检测
-• 📈 趋势分析
-• 📋 数据清洗建议
-• 🎨 可视化图表生成
-
-系统状态正在检查中...
+                    <div class="control-group">
+                        <label class="control-label">显示行数:</label>
+                        <select id="rowLimitSelect" class="control-select">
+                            <option value="50">50 行</option>
+                            <option value="100">100 行</option>
+                            <option value="200">200 行</option>
+                            <option value="500">500 行</option>
+                            <option value="1000">1000 行</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">显示列数:</label>
+                        <select id="colLimitSelect" class="control-select">
+                            <option value="10">10 列</option>
+                            <option value="20">20 列</option>
+                            <option value="50">50 列</option>
+                            <option value="100">所有列</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-buttons">
+                        <button id="refreshPreviewBtn" class="control-btn" onclick="refreshCurrentPreview()">
+                            🔄 刷新
+                        </button>
+                        <button id="fullPreviewBtn" class="control-btn secondary" onclick="openFullPreview()">
+                            🔍 完整预览
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 加载指示器 -->
+                <div id="previewLoading" class="preview-loading">
+                    <div class="spinner"></div>
+                    <p>正在加载数据预览...</p>
+                </div>
+                
+                <!-- 数据预览内容 -->
+                <div id="dataPreview">
+                    <p style="text-align: center; color: #666; padding: 40px;">上传文件后将显示数据预览...</p>
                 </div>
             </div>
 
-            <div id="dataTab" class="tab-content">
-                <div id="dataPreview">
-                    <p>上传文件后将显示数据预览...</p>
+            <div id="keywordsTab" class="tab-content">
+                <div id="keywordsAnalysis">
+                    <p style="text-align: center; color: #666; padding: 40px;">上传文件后将显示关键词分析...</p>
                 </div>
             </div>
 
             <div id="codeTab" class="tab-content">
                 <div id="generatedCode">
-                    <p>分析完成后将显示生成的Python代码...</p>
+                    <p style="text-align: center; color: #666; padding: 40px;">分析完成后将显示生成的Python代码...</p>
                 </div>
             </div>
         </div>
@@ -467,6 +1461,12 @@
         let currentFileId = null;
         let systemStatus = null;
         let mockMode = false;
+        let chatHistory = [];
+        let uploadedFiles = [];
+        let fileInfoCache = {};
+        let currentFileIndex = 0;
+        let currentSheetName = null;
+        let availableSheets = [];
 
         // API base URL
         const API_BASE = '/api';
@@ -474,7 +1474,15 @@
         // Initialize system
         document.addEventListener('DOMContentLoaded', () => {
             checkSystemStatus();
+            initializeChat();
+            initializePreviewControls();
         });
+        
+        // Initialize chat interface
+        function initializeChat() {
+            const chatDisabledOverlay = document.getElementById('chatDisabledOverlay');
+            chatDisabledOverlay.classList.add('show');
+        }
 
         // Check system status
         async function checkSystemStatus() {
@@ -491,7 +1499,7 @@
                 
             } catch (error) {
                 console.error('Failed to check system status:', error);
-                showError('无法连接到后端服务器');
+                console.warn('无法连接到后端服务器');
             }
         }
 
@@ -540,48 +1548,94 @@
             uploadSection.classList.remove('dragover');
             const files = e.dataTransfer.files;
             if (files.length > 0) {
-                handleFile(files[0]);
+                handleFiles(Array.from(files));
             }
         });
 
         fileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
-                handleFile(e.target.files[0]);
+                handleFiles(Array.from(e.target.files));
             }
         });
 
-        async function handleFile(file) {
-            // Validate file
+        async function handleFiles(files) {
+            // Validate files
             const allowedTypes = ['.xlsx', '.xls', '.xlsm'];
-            const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+            const validFiles = [];
             
-            if (!allowedTypes.includes(fileExtension)) {
-                showError('请上传Excel文件 (.xlsx, .xls, .xlsm)');
+            for (const file of files) {
+                const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+                
+                if (!allowedTypes.includes(fileExtension)) {
+                    console.warn(`文件 ${file.name} 不是Excel文件，已跳过`);
+                    continue;
+                }
+
+                if (file.size > 50 * 1024 * 1024) {
+                    console.warn(`文件 ${file.name} 大小超过50MB，已跳过`);
+                    continue;
+                }
+                
+                validFiles.push(file);
+            }
+            
+            if (validFiles.length === 0) {
+                console.error('没有有效的Excel文件');
                 return;
             }
 
-            if (file.size > 50 * 1024 * 1024) {
-                showError('文件大小不能超过50MB');
-                return;
-            }
-
-            uploadedFile = file;
-            displayFileInfo(file);
-            await uploadFile(file);
+            // Store all valid files
+            uploadedFiles = validFiles;
+            uploadedFile = validFiles[0]; // For compatibility with existing single file logic
+            displayFilesInfo(validFiles);
+            await uploadFiles(validFiles);
         }
 
-        function displayFileInfo(file) {
-            const sizeInMB = (file.size / 1024 / 1024).toFixed(2);
-            fileDetails.innerHTML = `
-                <p><strong>文件名:</strong> ${file.name}</p>
-                <p><strong>大小:</strong> ${sizeInMB} MB</p>
-                <p><strong>类型:</strong> ${file.type}</p>
-                <p><strong>最后修改:</strong> ${new Date(file.lastModified).toLocaleString()}</p>
-            `;
+        async function handleFile(file) {
+            // Legacy function for single file - now calls handleFiles
+            await handleFiles([file]);
+        }
+
+        function displayFilesInfo(files) {
+            if (files.length === 1) {
+                // Single file display
+                const file = files[0];
+                const sizeInMB = (file.size / 1024 / 1024).toFixed(2);
+                fileDetails.innerHTML = `
+                    <p><strong>文件名:</strong> ${file.name}</p>
+                    <p><strong>大小:</strong> ${sizeInMB} MB</p>
+                    <p><strong>类型:</strong> ${file.type}</p>
+                    <p><strong>最后修改:</strong> ${new Date(file.lastModified).toLocaleString()}</p>
+                `;
+            } else {
+                // Multiple files display
+                const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+                const totalSizeInMB = (totalSize / 1024 / 1024).toFixed(2);
+                
+                let filesListHtml = '';
+                files.forEach((file, index) => {
+                    const sizeInMB = (file.size / 1024 / 1024).toFixed(2);
+                    filesListHtml += `
+                        <p><strong>${index + 1}. ${file.name}</strong> (${sizeInMB} MB)</p>
+                    `;
+                });
+                
+                fileDetails.innerHTML = `
+                    <p><strong>已选择:</strong> ${files.length} 个文件</p>
+                    <p><strong>总大小:</strong> ${totalSizeInMB} MB</p>
+                    <hr style="margin: 10px 0;">
+                    ${filesListHtml}
+                `;
+            }
             fileInfo.classList.add('show');
         }
 
-        async function uploadFile(file) {
+        function displayFileInfo(file) {
+            // Legacy function for single file - now calls displayFilesInfo
+            displayFilesInfo([file]);
+        }
+
+        async function uploadFiles(files) {
             const workflowStatus = document.getElementById('workflowStatus');
             const workflowSteps = document.getElementById('workflowSteps');
             
@@ -589,7 +1643,7 @@
             workflowStatus.style.display = 'block';
             
             const steps = [
-                { id: 'upload', name: '📤 文件上传' },
+                { id: 'upload', name: files.length === 1 ? '📤 文件上传' : `📤 批量上传 (${files.length} 个文件)` },
                 { id: 'ingest', name: '📊 文件解析' },
                 { id: 'profile', name: '🔍 数据分析' },
                 { id: 'ready', name: '✅ 准备就绪' }
@@ -603,23 +1657,64 @@
             ).join('');
 
             try {
-                // Upload file
+                // Upload files
                 setStepStatus('upload', 'running');
                 const formData = new FormData();
-                formData.append('file', file);
+                
+                if (files.length === 1) {
+                    // Single file upload (existing API)
+                    formData.append('file', files[0]);
+                    
+                    const uploadResponse = await fetch(`${API_BASE}/upload`, {
+                        method: 'POST',
+                        body: formData
+                    });
 
-                const uploadResponse = await fetch(`${API_BASE}/upload`, {
-                    method: 'POST',
-                    body: formData
-                });
+                    if (!uploadResponse.ok) {
+                        const error = await uploadResponse.json();
+                        throw new Error(error.error || 'Upload failed');
+                    }
 
-                if (!uploadResponse.ok) {
-                    const error = await uploadResponse.json();
-                    throw new Error(error.error || 'Upload failed');
+                    const uploadResult = await uploadResponse.json();
+                    currentFileId = uploadResult.file_id;
+                } else {
+                    // Multiple files upload (batch API if available, fallback to single)
+                    files.forEach(file => {
+                        formData.append('files', file);
+                    });
+                    
+                    // Try batch upload first
+                    let uploadResponse = await fetch(`${API_BASE}/upload/batch`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!uploadResponse.ok) {
+                        // Fallback to single file upload for first file
+                        console.warn('Batch upload not available, using single file upload');
+                        const singleFormData = new FormData();
+                        singleFormData.append('file', files[0]);
+                        
+                        uploadResponse = await fetch(`${API_BASE}/upload`, {
+                            method: 'POST',
+                            body: singleFormData
+                        });
+                        
+                        if (!uploadResponse.ok) {
+                            const error = await uploadResponse.json();
+                            throw new Error(error.error || 'Upload failed');
+                        }
+                        
+                        const uploadResult = await uploadResponse.json();
+                        currentFileId = uploadResult.file_id;
+                        
+                        console.warn(`注意：系统目前只支持单文件处理，已上传第一个文件: ${files[0].name}`);
+                    } else {
+                        const uploadResult = await uploadResponse.json();
+                        currentFileId = uploadResult.file_id || uploadResult.file_ids?.[0];
+                    }
                 }
-
-                const uploadResult = await uploadResponse.json();
-                currentFileId = uploadResult.file_id;
+                
                 setStepStatus('upload', 'completed');
 
                 // Process file
@@ -644,25 +1739,36 @@
                 await new Promise(resolve => setTimeout(resolve, 500));
                 setStepStatus('ready', 'completed');
 
-                // Enable query interface
-                queryInput.disabled = false;
-                queryBtn.disabled = false;
+                // Enable chat interface
+                enableChatInterface();
+                
+                const successMessage = files.length === 1 
+                    ? '文件处理完成！现在可以开始提问了。'
+                    : `${files.length} 个文件已上传，当前处理文件: ${files[0].name}`;
                 
                 if (processResult.mock_mode) {
-                    showWarning('文件处理完成！系统运行在演示模式下，分析结果为模拟数据。');
+                    console.warn(successMessage + ' 系统运行在演示模式下，分析结果为模拟数据。');
                 } else {
-                    showSuccess('文件处理完成！现在可以开始提问了。');
+                    console.log(successMessage);
                 }
                 
                 // Display data preview using backend HTML conversion
                 await loadDataPreview();
                 
+                // Load keywords analysis
+                await loadKeywordsAnalysis();
+                
             } catch (error) {
-                showError('文件处理失败: ' + error.message);
+                console.error('文件处理失败: ' + error.message);
                 setStepStatus('upload', 'error');
             } finally {
                 uploadBtn.disabled = false;
             }
+        }
+
+        async function uploadFile(file) {
+            // Legacy function for single file - now calls uploadFiles
+            await uploadFiles([file]);
         }
 
         function setStepStatus(stepId, status) {
@@ -677,11 +1783,200 @@
                 return;
             }
 
+            try {
+                // Show preview controls
+                document.getElementById('previewControls').style.display = 'flex';
+                
+                // Load file sheets information
+                await loadFileSheets(currentFileId);
+                
+                // Show file tabs if multiple files
+                if (uploadedFiles.length > 1) {
+                    setupFileTabs();
+                }
+                
+                // Load initial preview
+                await refreshCurrentPreview();
+                
+            } catch (error) {
+                console.error('Preview error:', error);
+                const dataPreview = document.getElementById('dataPreview');
+                dataPreview.innerHTML = `<div class="error">无法加载数据预览: ${error.message}</div>`;
+            }
+        }
+
+        async function loadFileSheets(fileId) {
+            try {
+                const response = await fetch(`${API_BASE}/preview/${fileId}/sheets`);
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to load sheets: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    // The API returns result.info.sheets, not result.sheets
+                    availableSheets = (result.info && result.info.sheets) || [];
+                    console.log(`Loaded ${availableSheets.length} sheets:`, availableSheets.map(s => s.name));
+                    setupSheetSelector();
+                    
+                    // Cache file info
+                    fileInfoCache[fileId] = {
+                        sheets: availableSheets,
+                        filename: uploadedFiles.find((_, index) => index === currentFileIndex)?.name || '未知文件'
+                    };
+                } else {
+                    console.error('Sheets API failed:', result.error);
+                    throw new Error(result.error || 'Failed to get sheet info');
+                }
+            } catch (error) {
+                console.error('Error loading sheets:', error);
+                
+                // Fallback: try to get sheet info from initial preview API
+                await loadSheetsFromPreview(fileId);
+            }
+        }
+
+        async function loadSheetsFromPreview(fileId) {
+            try {
+                const response = await fetch(`${API_BASE}/preview/${fileId}?max_rows=1&max_cols=1`);
+                
+                if (!response.ok) {
+                    throw new Error('Preview API failed');
+                }
+
+                const result = await response.json();
+                
+                if (result.success && result.metadata) {
+                    const metadata = result.metadata;
+                    
+                    // Construct sheets array from metadata
+                    availableSheets = [];
+                    
+                    if (metadata.sheet_names && Array.isArray(metadata.sheet_names)) {
+                        availableSheets = metadata.sheet_names.map(name => ({
+                            name: name,
+                            rows: name === metadata.current_sheet ? metadata.total_rows : 'Unknown'
+                        }));
+                    } else if (metadata.current_sheet) {
+                        // At least we have the current sheet
+                        availableSheets = [{
+                            name: metadata.current_sheet,
+                            rows: metadata.total_rows || 'Unknown'
+                        }];
+                    }
+                    
+                    console.log(`Fallback loaded ${availableSheets.length} sheets:`, availableSheets.map(s => s.name));
+                    setupSheetSelector();
+                } else {
+                    console.warn('No sheet info available from either API');
+                    availableSheets = [];
+                    setupSheetSelector();
+                }
+            } catch (error) {
+                console.error('Fallback sheet loading failed:', error);
+                availableSheets = [];
+                setupSheetSelector();
+            }
+        }
+
+        function setupSheetSelector() {
+            const sheetSelect = document.getElementById('sheetSelect');
+            
+            if (!sheetSelect) {
+                console.error('Sheet select element not found!');
+                return;
+            }
+            
+            sheetSelect.innerHTML = '<option value="">选择工作表...</option>';
+            
+            if (!availableSheets || availableSheets.length === 0) {
+                console.warn('No sheets available to display');
+                sheetSelect.innerHTML = '<option value="">暂无工作表数据</option>';
+                sheetSelect.disabled = true;
+                return;
+            }
+            
+            sheetSelect.disabled = false;
+            
+            availableSheets.forEach(sheet => {
+                const option = document.createElement('option');
+                option.value = sheet.name;
+                option.textContent = `${sheet.name} (${sheet.rows || '未知'} 行)`;
+                sheetSelect.appendChild(option);
+            });
+            
+            // Auto-select first sheet if available
+            if (availableSheets.length > 0) {
+                currentSheetName = availableSheets[0].name;
+                sheetSelect.value = currentSheetName;
+                console.log(`Sheet selector initialized with ${availableSheets.length} sheets, selected: ${currentSheetName}`);
+            }
+            
+            // Add event listener for sheet change
+            sheetSelect.onchange = function() {
+                currentSheetName = this.value;
+                console.log('Switching to sheet:', currentSheetName);
+                refreshCurrentPreview();
+            };
+        }
+
+        function setupFileTabs() {
+            const fileTabs = document.getElementById('fileTabs');
+            fileTabs.style.display = 'flex';
+            fileTabs.innerHTML = '';
+            
+            uploadedFiles.forEach((file, index) => {
+                const tab = document.createElement('button');
+                tab.className = `file-tab ${index === currentFileIndex ? 'active' : ''}`;
+                tab.textContent = file.name;
+                tab.onclick = () => switchToFile(index);
+                fileTabs.appendChild(tab);
+            });
+        }
+
+        async function switchToFile(fileIndex) {
+            if (fileIndex === currentFileIndex || fileIndex >= uploadedFiles.length) {
+                return;
+            }
+            
+            currentFileIndex = fileIndex;
+            uploadedFile = uploadedFiles[fileIndex];
+            
+            // Update active tab
+            const tabs = document.querySelectorAll('.file-tab');
+            tabs.forEach((tab, index) => {
+                tab.classList.toggle('active', index === fileIndex);
+            });
+            
+            // For now, we'll use the same fileId for all files (current limitation)
+            // In a full implementation, each file would have its own fileId
+            await loadFileSheets(currentFileId);
+            await refreshCurrentPreview();
+        }
+
+        async function refreshCurrentPreview() {
+            if (!currentFileId) {
+                return;
+            }
+
+            const previewLoading = document.getElementById('previewLoading');
             const dataPreview = document.getElementById('dataPreview');
-            dataPreview.innerHTML = '<div style="padding: 20px; text-align: center;">📊 正在生成数据预览...</div>';
+            
+            previewLoading.classList.add('show');
+            dataPreview.style.display = 'none';
 
             try {
-                const response = await fetch(`${API_BASE}/preview/${currentFileId}?max_rows=50&max_cols=10`);
+                const rowLimit = document.getElementById('rowLimitSelect').value;
+                const colLimit = document.getElementById('colLimitSelect').value;
+                
+                let url = `${API_BASE}/preview/${currentFileId}?max_rows=${rowLimit}&max_cols=${colLimit}`;
+                if (currentSheetName) {
+                    url += `&sheet=${encodeURIComponent(currentSheetName)}`;
+                }
+
+                const response = await fetch(url);
                 
                 if (!response.ok) {
                     throw new Error('Failed to load preview');
@@ -689,29 +1984,36 @@
 
                 const result = await response.json();
                 
+                previewLoading.classList.remove('show');
+                dataPreview.style.display = 'block';
+                
                 if (result.success) {
-                    displayDataPreview(result.html, result.metadata);
+                    displayAdvancedDataPreview(result.html, result.metadata);
                 } else {
                     dataPreview.innerHTML = `<div class="error">预览失败: ${result.error}</div>`;
                 }
             } catch (error) {
                 console.error('Preview error:', error);
-                dataPreview.innerHTML = `<div class="error">无法加载数据预览: ${error.message}</div>`;
+                previewLoading.classList.remove('show');
+                dataPreview.style.display = 'block';
+                showPreviewError(error, '预览加载');
             }
         }
 
-        function displayDataPreview(htmlContent, metadata) {
+        function displayAdvancedDataPreview(htmlContent, metadata) {
             const dataPreview = document.getElementById('dataPreview');
             
             const fileName = uploadedFile ? uploadedFile.name : '未知文件';
+            const sheetName = currentSheetName || (metadata ? metadata.current_sheet : '');
             
             let previewHTML = `
                 <div style="background: white; padding: 15px; border-radius: 8px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <h4>📊 数据预览 - ${fileName}</h4>
-                        <div style="display: flex; gap: 10px;">
-                            <button onclick="loadDataPreview()" style="padding: 5px 10px; background: #4CAF50; color: white; border: none; border-radius: 3px; cursor: pointer;">🔄 刷新</button>
-                            <button onclick="showFullPreview()" style="padding: 5px 10px; background: #2196F3; color: white; border: none; border-radius: 3px; cursor: pointer;">🔍 查看完整数据</button>
+                        <div>
+                            <h4>📊 数据预览</h4>
+                            <p style="margin: 5px 0 0 0; color: #6c757d; font-size: 13px;">
+                                📁 ${fileName}${sheetName ? ` → ${sheetName}` : ''}
+                            </p>
                         </div>
                     </div>
                     
@@ -721,17 +2023,26 @@
             `;
             
             if (metadata) {
+                const rowLimit = document.getElementById('rowLimitSelect').value;
+                const colLimit = document.getElementById('colLimitSelect').value;
+                
                 previewHTML += `
-                    <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 5px; font-size: 14px;">
+                    <div class="preview-info">
                         <strong>📈 数据概览:</strong><br>
-                        • 工作表: ${metadata.current_sheet || 'N/A'}<br>
-                        • 行数: ${metadata.total_rows || 'N/A'} 行<br>
-                        • 列数: ${metadata.total_cols || 'N/A'} 列<br>
-                        ${metadata.truncated && metadata.truncated.rows ? '• ⚠️ 显示部分数据，如需查看全部请点击"查看完整数据"<br>' : ''}
-                        ${metadata.sheet_names && metadata.sheet_names.length > 1 ? 
-                            `• 其他工作表: ${metadata.sheet_names.filter(s => s !== metadata.current_sheet).join(', ')}` : ''}
+                        • 当前工作表: ${metadata.current_sheet || sheetName || 'N/A'}<br>
+                        • 总行数: ${metadata.total_rows || 'N/A'} 行<br>
+                        • 总列数: ${metadata.total_cols || 'N/A'} 列<br>
+                        • 显示范围: ${rowLimit} 行 × ${colLimit === '100' ? '所有' : colLimit} 列<br>
+                        ${metadata.truncated && (metadata.truncated.rows || metadata.truncated.cols) ? 
+                            '• ⚠️ 显示部分数据，可调整显示范围或查看完整预览' : 
+                            '• ✅ 显示完整数据'}
                     </div>
                 `;
+            }
+            
+            // Add tips for first-time users or when there are multiple sheets/files
+            if (availableSheets.length > 1 || uploadedFiles.length > 1) {
+                previewHTML += showPreviewTips();
             }
             
             previewHTML += '</div>';
@@ -739,64 +2050,238 @@
             dataPreview.innerHTML = previewHTML;
         }
 
-        async function showFullPreview() {
-            if (!currentFileId) {
+        // Add event listeners for row/col limit changes
+        function initializePreviewControls() {
+            const rowLimitSelect = document.getElementById('rowLimitSelect');
+            const colLimitSelect = document.getElementById('colLimitSelect');
+            
+            rowLimitSelect.onchange = refreshCurrentPreview;
+            colLimitSelect.onchange = refreshCurrentPreview;
+        }
+
+        // Add keyboard shortcuts for data preview
+        document.addEventListener('keydown', (e) => {
+            // Only activate shortcuts when data preview tab is active
+            if (!document.getElementById('dataTab').classList.contains('active')) {
                 return;
             }
-
-            const response = await fetch(`${API_BASE}/preview/${currentFileId}?max_rows=1000&max_cols=50`);
-            const result = await response.json();
             
-            if (result.success) {
-                // Open in new window/tab with full preview
-                const newWindow = window.open('', '_blank');
-                newWindow.document.write(`
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <title>完整数据预览 - ${uploadedFile ? uploadedFile.name : '数据'}</title>
-                        <meta charset="UTF-8">
-                        <style>
-                            body { font-family: 'Segoe UI', sans-serif; margin: 20px; }
-                            .header { text-align: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #ddd; }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="header">
-                            <h1>📊 完整数据预览</h1>
-                            <p>文件: ${uploadedFile ? uploadedFile.name : '未知文件'}</p>
-                        </div>
-                        <div style="overflow: auto;">
-                            ${result.html}
-                        </div>
-                    </body>
-                    </html>
-                `);
-                newWindow.document.close();
+            // Ctrl+R or F5: Refresh preview
+            if ((e.ctrlKey && e.key === 'r') || e.key === 'F5') {
+                e.preventDefault();
+                refreshCurrentPreview();
+            }
+            
+            // Ctrl+F: Open full preview
+            if (e.ctrlKey && e.key === 'f') {
+                e.preventDefault();
+                openFullPreview();
+            }
+        });
+
+        // Enhanced error handling for preview functions
+        function showPreviewError(error, context = '') {
+            const dataPreview = document.getElementById('dataPreview');
+            const errorMessage = typeof error === 'string' ? error : error.message || '未知错误';
+            
+            dataPreview.innerHTML = `
+                <div style="background: white; padding: 40px; text-align: center; border-radius: 8px;">
+                    <div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>
+                    <h3 style="color: #dc3545; margin-bottom: 15px;">数据预览失败</h3>
+                    <p style="color: #6c757d; margin-bottom: 20px;">
+                        ${context && `${context}: `}${errorMessage}
+                    </p>
+                    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                        <button onclick="refreshCurrentPreview()" class="control-btn">
+                            🔄 重新加载
+                        </button>
+                        <button onclick="loadDataPreview()" class="control-btn secondary">
+                            🔧 重置预览
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Add preview hints and tips
+        function showPreviewTips() {
+            return `
+                <div style="background: #e3f2fd; padding: 15px; border-radius: 5px; margin-top: 10px; font-size: 13px;">
+                    <strong>💡 预览提示:</strong><br>
+                    • 使用工作表下拉菜单切换不同的工作表<br>
+                    • 调整显示行数和列数来控制预览范围<br>
+                    • 点击"完整预览"查看更多数据<br>
+                    • 快捷键: Ctrl+R 刷新, Ctrl+F 完整预览
+                </div>
+            `;
+        }
+
+        // Enhanced file information display
+        function getFileInfoSummary() {
+            if (!uploadedFiles || uploadedFiles.length === 0) {
+                return '';
+            }
+            
+            if (uploadedFiles.length === 1) {
+                const file = uploadedFiles[0];
+                const sizeInMB = (file.size / 1024 / 1024).toFixed(2);
+                return `📁 ${file.name} (${sizeInMB} MB)`;
             } else {
-                showError('无法加载完整预览: ' + result.error);
+                const totalSize = uploadedFiles.reduce((sum, file) => sum + file.size, 0);
+                const totalSizeInMB = (totalSize / 1024 / 1024).toFixed(2);
+                return `📁 ${uploadedFiles.length} 个文件 (总计 ${totalSizeInMB} MB)`;
             }
         }
 
-        async function submitQuery() {
-            const query = queryInput.value.trim();
-            if (!query) {
-                showError('请输入您的问题');
-                return;
-            }
-
+        async function openFullPreview() {
             if (!currentFileId) {
-                showError('请先上传并处理Excel文件');
                 return;
             }
-
-            const loading = document.getElementById('loading');
-            const responseContent = document.getElementById('responseContent');
             
-            loading.classList.add('show');
-            responseContent.style.display = 'none';
-            queryBtn.disabled = true;
+            try {
+                let url = `${API_BASE}/preview/${currentFileId}?max_rows=1000&max_cols=100`;
+                if (currentSheetName) {
+                    url += `&sheet=${encodeURIComponent(currentSheetName)}`;
+                }
+                
+                const response = await fetch(url);
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Open in new window/tab with full preview
+                    const newWindow = window.open('', '_blank');
+                    const fileName = uploadedFile ? uploadedFile.name : '数据';
+                    const sheetName = currentSheetName || '';
+                    
+                    newWindow.document.write(`
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <title>完整数据预览 - ${fileName}${sheetName ? ` → ${sheetName}` : ''}</title>
+                            <meta charset="UTF-8">
+                            <style>
+                                body { font-family: 'Segoe UI', sans-serif; margin: 20px; }
+                                .header { text-align: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #ddd; }
+                                .info { background: #f8f9fa; padding: 10px; margin-bottom: 15px; border-radius: 5px; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="header">
+                                <h1>📊 完整数据预览</h1>
+                                <p>📁 文件: ${fileName}</p>
+                                ${sheetName ? `<p>📋 工作表: ${sheetName}</p>` : ''}
+                            </div>
+                            ${result.metadata ? `
+                                <div class="info">
+                                    <strong>数据概览:</strong>
+                                    总行数: ${result.metadata.total_rows || 'N/A'} 行 |
+                                    总列数: ${result.metadata.total_cols || 'N/A'} 列
+                                </div>
+                            ` : ''}
+                            <div style="overflow: auto;">
+                                ${result.html}
+                            </div>
+                        </body>
+                        </html>
+                    `);
+                    newWindow.document.close();
+                } else {
+                    console.error('无法加载完整预览: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Error opening full preview:', error);
+            }
+        }
 
+
+        // Enable chat interface
+        function enableChatInterface() {
+            const chatInput = document.getElementById('chatInput');
+            const chatSendBtn = document.getElementById('chatSendBtn');
+            const chatDisabledOverlay = document.getElementById('chatDisabledOverlay');
+            const welcomeMessage = document.getElementById('welcomeMessage');
+            
+            chatInput.disabled = false;
+            chatSendBtn.disabled = false;
+            chatDisabledOverlay.classList.remove('show');
+            
+            // Hide welcome message and add initial assistant message
+            welcomeMessage.style.display = 'none';
+            
+            addChatMessage('assistant', '您好！我是Excel智能助手。文件已经处理完成，现在您可以问我任何关于数据的问题。我可以帮您分析数据、查找模式、生成图表等。请输入您想了解的问题吧！');
+        }
+        
+        // Add message to chat
+        function addChatMessage(sender, content, timestamp = null) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const now = timestamp || new Date();
+            const timeStr = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            
+            let avatarIcon = '🤖';
+            if (sender === 'user') {
+                avatarIcon = '👤';
+            } else if (sender === 'system') {
+                avatarIcon = '⚙️';
+            }
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar">${avatarIcon}</div>
+                <div>
+                    <div class="message-content">${content.replace(/\n/g, '<br>')}</div>
+                    <div class="message-time">${timeStr}</div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Store in chat history
+            chatHistory.push({
+                sender: sender,
+                content: content,
+                timestamp: now
+            });
+        }
+        
+        // Handle chat input keydown
+        function handleChatKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendChatMessage();
+            }
+        }
+        
+        // Send chat message
+        async function sendChatMessage() {
+            const chatInput = document.getElementById('chatInput');
+            const message = chatInput.value.trim();
+            
+            if (!message) {
+                return;
+            }
+            
+            if (!currentFileId) {
+                addChatMessage('assistant', '抱歉，请先上传并处理Excel文件才能开始分析。');
+                return;
+            }
+            
+            // Add user message
+            addChatMessage('user', message);
+            
+            // Clear input
+            chatInput.value = '';
+            
+            // Show progress tracking instead of simple thinking indicator
+            showProgressIndicator();
+            
+            // Disable input during processing
+            chatInput.disabled = true;
+            document.getElementById('chatSendBtn').disabled = true;
+            
+            let progressEventSource = null;
             try {
                 const response = await fetch(`${API_BASE}/query`, {
                     method: 'POST',
@@ -805,7 +2290,7 @@
                     },
                     body: JSON.stringify({
                         file_id: currentFileId,
-                        query: query
+                        query: message
                     })
                 });
 
@@ -816,105 +2301,328 @@
 
                 const result = await response.json();
                 
-                loading.classList.remove('show');
-                responseContent.style.display = 'block';
-                
-                // Display enhanced response with new format
-                displayEnhancedResponse(result);
-
-                // Display generated code
-                if (result.generated_code) {
-                    document.getElementById('generatedCode').innerHTML = `
-                        <div style="background: white; padding: 15px; border-radius: 8px;">
-                            <h4>💻 生成的Python代码</h4>
-                            ${result.mock_mode ? '<div class="warning">⚠️ 演示模式 - 代码仅供参考</div>' : ''}
-                            <pre style="background: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto;"><code>${result.generated_code}</code></pre>
-                        </div>
-                    `;
+                // If we got a request_id, connect to progress stream
+                if (result.request_id) {
+                    connectToProgressStream(result.request_id, message);
+                } else {
+                    // No request ID - this is a direct response (no progress tracking)
+                    hideProgressIndicator();
+                    
+                    // Add assistant response
+                    const assistantResponse = result.user_response || result.response || result.answer || "抱歉，我无法处理您的问题。";
+                    addChatMessage('assistant', assistantResponse);
+                    
+                    // Display generated code if available
+                    if (result.generated_code) {
+                        displayGeneratedCode(result.generated_code, message, result.mock_mode);
+                    }
+                    
+                    // Show workflow completion if available
+                    if (result.workflow_steps && result.workflow_steps.length > 0) {
+                        const successSteps = result.workflow_steps.filter(step => step.status === 'success').length;
+                        const totalSteps = result.workflow_steps.length;
+                        addChatMessage('system', `🎉 工作流执行完成！成功执行了 ${successSteps}/${totalSteps} 个步骤。`);
+                    }
+                    
+                    // Re-enable input
+                    chatInput.disabled = false;
+                    document.getElementById('chatSendBtn').disabled = false;
+                    chatInput.focus();
                 }
-
-                queryBtn.disabled = false;
                 
             } catch (error) {
-                loading.classList.remove('show');
-                showError('分析失败: ' + error.message);
-                queryBtn.disabled = false;
+                hideProgressIndicator();
+                addChatMessage('assistant', `抱歉，处理您的问题时出现了错误：${error.message}`);
+                
+                // Re-enable input
+                chatInput.disabled = false;
+                document.getElementById('chatSendBtn').disabled = false;
+                chatInput.focus();
+            }
+        }
+        
+        // Send quick question
+        function sendQuickQuestion(question) {
+            const chatInput = document.getElementById('chatInput');
+            if (!currentFileId) {
+                return;
+            }
+            
+            chatInput.value = question;
+            sendChatMessage();
+        }
+
+        // Keywords analysis functions
+        async function loadKeywordsAnalysis() {
+            if (!currentFileId) {
+                return;
+            }
+
+            const keywordsAnalysis = document.getElementById('keywordsAnalysis');
+            
+            try {
+                // Show loading state
+                keywordsAnalysis.innerHTML = `
+                    <div class="keywords-loading show">
+                        <div class="spinner"></div>
+                        <p>正在分析关键词...</p>
+                    </div>
+                `;
+
+                // Fetch keywords analysis
+                const response = await fetch(`${API_BASE}/files/${currentFileId}/keywords`);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load keywords analysis');
+                }
+
+                const result = await response.json();
+                
+                if (result.success && result.text_analysis) {
+                    displayKeywordsAnalysis(result.text_analysis, result.filename);
+                } else {
+                    // If basic analysis not available, try detailed analysis
+                    await loadDetailedKeywordsAnalysis();
+                }
+                
+            } catch (error) {
+                console.error('Keywords analysis error:', error);
+                
+                // Try detailed analysis as fallback
+                try {
+                    await loadDetailedKeywordsAnalysis();
+                } catch (detailError) {
+                    console.error('Detailed keywords analysis also failed:', detailError);
+                    showKeywordsError(error.message);
+                }
             }
         }
 
-        function displayEnhancedResponse(result) {
-            const responseContent = document.getElementById('responseContent');
+        async function loadDetailedKeywordsAnalysis() {
+            const response = await fetch(`${API_BASE}/files/${currentFileId}/keywords/detailed`);
             
-            // Use user_response if available (from new response generation agent)
-            let mainResponse = result.user_response || result.response || "抱歉，没有生成回答。";
-            let summary = result.response_summary || "";
-            let recommendations = result.recommendations || [];
+            if (!response.ok) {
+                throw new Error('详细关键词分析不可用');
+            }
+
+            const result = await response.json();
             
-            // Build enhanced response HTML
-            let responseHTML = `
-                <div style="background: white; padding: 20px; border-radius: 8px; line-height: 1.6;">
-                    <div style="margin-bottom: 20px;">
-                        ${mainResponse.split('\n').map(line => `<p>${line}</p>`).join('')}
+            if (result.success && result.detailed_analysis) {
+                displayDetailedKeywordsAnalysis(result.detailed_analysis, result.filename);
+            } else {
+                throw new Error(result.error || '无法获取关键词分析');
+            }
+        }
+
+        function displayKeywordsAnalysis(textAnalysis, filename) {
+            const keywordsAnalysis = document.getElementById('keywordsAnalysis');
+            
+            const totalTexts = textAnalysis.total_texts || 0;
+            const totalWords = textAnalysis.total_words || 0;
+            const uniqueWordCount = textAnalysis.unique_word_count || 0;
+            const topWords = textAnalysis.top_words || {};
+            const keywordsBySheet = textAnalysis.keywords_by_sheet || {};
+            const sheetSummary = textAnalysis.sheet_summary || {};
+
+            let html = `
+                <div class="keywords-container">
+                    <div class="keywords-header">
+                        <div>
+                            <h3>🔤 关键词分析</h3>
+                            <p style="margin: 5px 0 0 0; color: #6c757d; font-size: 14px;">
+                                📁 ${filename} - 基于jieba分词的关键词提取
+                            </p>
+                        </div>
+                        <div class="keywords-controls">
+                            <button class="keywords-refresh-btn" onclick="refreshKeywordsAnalysis()">
+                                🔄 刷新分析
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="keywords-summary">
+                        <h4 style="margin-bottom: 10px;">📊 分析概览</h4>
+                        <div class="keywords-summary-stats">
+                            <div class="stat-item">
+                                <div class="stat-number">${totalTexts}</div>
+                                <div class="stat-label">文本单元</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">${totalWords}</div>
+                                <div class="stat-label">总词数</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">${uniqueWordCount}</div>
+                                <div class="stat-label">唯一词汇</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">${Object.keys(sheetSummary).length}</div>
+                                <div class="stat-label">工作表数</div>
+                            </div>
+                        </div>
                     </div>
             `;
-            
-            // Add summary if available
-            if (summary) {
-                responseHTML += `
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #007bff;">
-                        <h4 style="margin: 0 0 10px 0; color: #007bff;">📊 处理摘要</h4>
-                        <p style="margin: 0;">${summary}</p>
-                    </div>
+
+            // 高频词汇
+            if (Object.keys(topWords).length > 0) {
+                html += `
+                    <div class="keywords-section">
+                        <h4>🔥 高频词汇 (Top ${Math.min(20, Object.keys(topWords).length)})</h4>
+                        <div class="top-words-grid">
                 `;
-            }
-            
-            // Add recommendations if available
-            if (recommendations && recommendations.length > 0) {
-                responseHTML += `
-                    <div style="background: #e8f5e9; padding: 15px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #28a745;">
-                        <h4 style="margin: 0 0 10px 0; color: #28a745;">💡 建议</h4>
-                        <ul style="margin: 0; padding-left: 20px;">
-                            ${recommendations.map(rec => `<li>${rec}</li>`).join('')}
-                        </ul>
-                    </div>
-                `;
-            }
-            
-            // Add technical details if available (for advanced users)
-            if (result.technical_details) {
-                responseHTML += `
-                    <details style="margin-top: 20px;">
-                        <summary style="cursor: pointer; font-weight: bold; color: #6c757d;">🔧 技术详情</summary>
-                        <div style="background: #f8f9fa; padding: 15px; margin-top: 10px; border-radius: 5px; font-size: 14px;">
-                            <p><strong>工作流类型:</strong> ${result.technical_details.workflow_type || 'N/A'}</p>
-                            <p><strong>处理步骤:</strong> ${result.technical_details.processing_steps ? result.technical_details.processing_steps.length : 0} 步</p>
-                            ${result.technical_details.code_generated ? '<p><strong>代码生成:</strong> ✅</p>' : ''}
-                            ${result.technical_details.limitations && result.technical_details.limitations.length > 0 ? 
-                                `<p><strong>限制:</strong> ${result.technical_details.limitations.join(', ')}</p>` : ''}
+                
+                const sortedTopWords = Object.entries(topWords)
+                    .sort(([,a], [,b]) => b - a)
+                    .slice(0, 20);
+                
+                sortedTopWords.forEach(([word, count]) => {
+                    html += `
+                        <div class="word-item">
+                            <span class="word-text">${word}</span>
+                            <span class="word-count">${count}</span>
                         </div>
-                    </details>
-                `;
-            }
-            
-            // Add workflow status indicator
-            if (result.status) {
-                const statusColor = result.status === 'success' ? '#28a745' : (result.status === 'failed' ? '#dc3545' : '#ffc107');
-                const statusIcon = result.status === 'success' ? '✅' : (result.status === 'failed' ? '❌' : '⚠️');
-                responseHTML += `
-                    <div style="margin-top: 20px; padding: 10px; background: rgba(${result.status === 'success' ? '40, 167, 69' : (result.status === 'failed' ? '220, 53, 69' : '255, 193, 7')}, 0.1); border-radius: 5px; border-left: 4px solid ${statusColor};">
-                        <small><strong>${statusIcon} 状态:</strong> ${result.status === 'success' ? '处理成功' : (result.status === 'failed' ? '处理失败' : '部分完成')}</small>
+                    `;
+                });
+                
+                html += `
+                        </div>
                     </div>
                 `;
             }
-            
-            responseHTML += '</div>';
-            
-            responseContent.innerHTML = responseHTML;
+
+            // 按工作表显示关键词
+            if (Object.keys(keywordsBySheet).length > 0) {
+                html += `<div class="keywords-section"><h4>📋 各工作表关键词</h4>`;
+                
+                Object.entries(keywordsBySheet).forEach(([sheetName, keywords]) => {
+                    const sheetInfo = sheetSummary[sheetName] || {};
+                    const textCount = sheetInfo.text_count || 0;
+                    const wordCount = sheetInfo.word_count || 0;
+                    
+                    html += `
+                        <div class="sheet-keywords">
+                            <div class="sheet-header">
+                                <div class="sheet-title">📄 ${sheetName}</div>
+                                <div class="sheet-stats">
+                                    ${textCount} 个文本单元 • ${wordCount} 个词汇
+                                </div>
+                            </div>
+                    `;
+                    
+                    if (keywords && keywords.length > 0) {
+                        html += `
+                            <div class="keyword-tags">
+                        `;
+                        
+                        keywords.forEach(keyword => {
+                            let word, weight;
+                            if (Array.isArray(keyword) && keyword.length >= 2) {
+                                [word, weight] = keyword;
+                            } else if (typeof keyword === 'string') {
+                                word = keyword;
+                                weight = 1.0;
+                            } else {
+                                return;
+                            }
+                            
+                            const weightStr = typeof weight === 'number' ? weight.toFixed(3) : weight;
+                            
+                            html += `
+                                <div class="keyword-tag">
+                                    <span>${word}</span>
+                                    <span class="keyword-weight">${weightStr}</span>
+                                </div>
+                            `;
+                        });
+                        
+                        html += `</div>`;
+                    } else {
+                        html += `<p style="color: #666; font-style: italic;">该工作表无关键词数据</p>`;
+                    }
+                    
+                    html += `</div>`;
+                });
+                
+                html += `</div>`;
+            }
+
+            if (Object.keys(topWords).length === 0 && Object.keys(keywordsBySheet).length === 0) {
+                html += `
+                    <div class="no-keywords">
+                        <div style="font-size: 48px; margin-bottom: 15px;">📝</div>
+                        <h3>暂无关键词数据</h3>
+                        <p>该Excel文件可能不包含足够的文本内容进行关键词分析，</p>
+                        <p>或者文件尚未进行文本分析处理。</p>
+                        <button class="keywords-refresh-btn" onclick="refreshKeywordsAnalysis()" style="margin-top: 15px;">
+                            🔄 重新分析
+                        </button>
+                    </div>
+                `;
+            }
+
+            html += `</div>`;
+            keywordsAnalysis.innerHTML = html;
         }
 
-        function setQuery(query) {
-            document.getElementById('queryInput').value = query;
+        function displayDetailedKeywordsAnalysis(detailedAnalysis, filename) {
+            // Convert detailed analysis to the same format as basic analysis
+            const sheets = detailedAnalysis.sheets || {};
+            const totalTexts = detailedAnalysis.total_texts || 0;
+            const totalWords = detailedAnalysis.total_words || 0;
+            const uniqueWordCount = detailedAnalysis.unique_word_count || 0;
+
+            // Create top words from detailed analysis
+            const topWords = {};
+            const keywordsBySheet = {};
+            const sheetSummary = {};
+
+            Object.entries(sheets).forEach(([sheetName, sheetData]) => {
+                // Collect top words for this sheet
+                const wordFreq = sheetData.word_frequency || {};
+                Object.entries(wordFreq).forEach(([word, count]) => {
+                    topWords[word] = (topWords[word] || 0) + count;
+                });
+
+                // Collect keywords for this sheet
+                keywordsBySheet[sheetName] = sheetData.keywords || [];
+
+                // Sheet summary
+                sheetSummary[sheetName] = {
+                    text_count: sheetData.text_count || 0,
+                    word_count: sheetData.word_count || 0,
+                    unique_word_count: sheetData.unique_words ? sheetData.unique_words.length : 0
+                };
+            });
+
+            // Display using the same function
+            displayKeywordsAnalysis({
+                total_texts: totalTexts,
+                total_words: totalWords,
+                unique_word_count: uniqueWordCount,
+                top_words: topWords,
+                keywords_by_sheet: keywordsBySheet,
+                sheet_summary: sheetSummary
+            }, filename);
         }
+
+        function showKeywordsError(errorMessage) {
+            const keywordsAnalysis = document.getElementById('keywordsAnalysis');
+            keywordsAnalysis.innerHTML = `
+                <div class="keywords-error">
+                    <div style="font-size: 48px; margin-bottom: 15px;">⚠️</div>
+                    <h3>关键词分析失败</h3>
+                    <p>${errorMessage}</p>
+                    <button class="keywords-refresh-btn" onclick="refreshKeywordsAnalysis()" style="margin-top: 15px;">
+                        🔄 重试
+                    </button>
+                </div>
+            `;
+        }
+
+        async function refreshKeywordsAnalysis() {
+            await loadKeywordsAnalysis();
+        }
+
 
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => {
@@ -928,24 +2636,463 @@
             document.getElementById(tabName + 'Tab').classList.add('active');
             event.target.classList.add('active');
         }
-
-        function showError(message) {
-            const responseContent = document.getElementById('responseContent');
-            responseContent.innerHTML = `<div class="error">❌ ${message}</div>`;
-            responseContent.style.display = 'block';
+        
+        // Progress tracking functions
+        let currentProgressStream = null;
+        
+        function showProgressIndicator() {
+            const progressIndicator = document.getElementById('progressIndicator');
+            const thinkingIndicator = document.getElementById('thinkingIndicator');
+            
+            // Hide old thinking indicator
+            thinkingIndicator.classList.remove('show');
+            
+            // Show progress indicator
+            progressIndicator.classList.add('show');
+            
+            // Reset progress
+            updateProgress(0, '初始化中...', '正在准备处理您的请求...');
+            
+            // Clear steps
+            document.getElementById('progressSteps').innerHTML = '';
+        }
+        
+        function hideProgressIndicator() {
+            const progressIndicator = document.getElementById('progressIndicator');
+            progressIndicator.classList.remove('show');
+            progressIndicator.classList.remove('completed');
+            progressIndicator.classList.remove('expanded');
+            
+            // Hide toggle button
+            const toggleBtn = document.getElementById('progressToggleBtn');
+            toggleBtn.style.display = 'none';
+            
+            // Show progress bar container
+            const progressBarContainer = document.getElementById('progressBarContainer');
+            progressBarContainer.style.display = 'block';
+            
+            // Close any existing progress stream
+            if (currentProgressStream) {
+                currentProgressStream.close();
+                currentProgressStream = null;
+            }
         }
 
-        function showSuccess(message) {
-            const responseContent = document.getElementById('responseContent');
-            responseContent.innerHTML = `<div class="success">✅ ${message}</div>`;
-            responseContent.style.display = 'block';
+        function completeProgressIndicator() {
+            const progressIndicator = document.getElementById('progressIndicator');
+            const toggleBtn = document.getElementById('progressToggleBtn');
+            const progressBarContainer = document.getElementById('progressBarContainer');
+            
+            // Mark as completed and show toggle button
+            progressIndicator.classList.add('completed');
+            progressIndicator.classList.add('show'); // Keep visible
+            toggleBtn.style.display = 'flex';
+            toggleBtn.textContent = '▼';
+            toggleBtn.title = '显示处理步骤详情';
+            
+            // Hide progress bar in completed state
+            progressBarContainer.style.display = 'none';
+            
+            // Close any existing progress stream
+            if (currentProgressStream) {
+                currentProgressStream.close();
+                currentProgressStream = null;
+            }
         }
 
-        function showWarning(message) {
-            const responseContent = document.getElementById('responseContent');
-            responseContent.innerHTML = `<div class="warning">⚠️ ${message}</div>`;
-            responseContent.style.display = 'block';
+        function toggleProgressDetails() {
+            const progressIndicator = document.getElementById('progressIndicator');
+            const toggleBtn = document.getElementById('progressToggleBtn');
+            
+            if (progressIndicator.classList.contains('expanded')) {
+                progressIndicator.classList.remove('expanded');
+                toggleBtn.textContent = '▼';
+                toggleBtn.title = '显示处理步骤详情';
+            } else {
+                progressIndicator.classList.add('expanded');
+                toggleBtn.textContent = '▲';
+                toggleBtn.title = '隐藏处理步骤详情';
+            }
         }
+        
+        function updateProgress(percentage, message, title = null) {
+            const progressBar = document.getElementById('progressBar');
+            const progressMessage = document.getElementById('progressMessage');
+            const progressTitle = document.getElementById('progressTitle');
+            const progressPercentage = document.getElementById('progressPercentage');
+            
+            // Update progress bar
+            progressBar.style.width = `${percentage}%`;
+            
+            // Update text
+            progressMessage.textContent = message;
+            progressPercentage.textContent = `${percentage}%`;
+            
+            if (title) {
+                progressTitle.textContent = title;
+            }
+        }
+        
+        function updateProgressSteps(steps) {
+            const progressSteps = document.getElementById('progressSteps');
+            
+            progressSteps.innerHTML = steps.map(step => {
+                const iconContent = getStepIcon(step.status);
+                const hasDetails = step.details || step.input || step.output || step.result;
+                
+                return `
+                    <div class="progress-step ${step.status}" data-step-id="${step.step_id}">
+                        <div class="progress-step-icon">${iconContent}</div>
+                        <div class="progress-step-content">
+                            <div class="progress-step-name">
+                                ${step.step_name}
+                                ${hasDetails ? `<button class="progress-step-expand-btn" onclick="toggleStepDetails('${step.step_id}')">详情</button>` : ''}
+                            </div>
+                            <div class="progress-step-description">${step.description || ''}</div>
+                            
+                            ${hasDetails ? `
+                                <div class="progress-step-details" id="details-${step.step_id}">
+                                    ${step.input ? `
+                                        <div class="step-input-output">
+                                            <strong>📥 输入参数:</strong>
+                                            <div class="step-data">${formatStepData(step.input)}</div>
+                                        </div>
+                                    ` : ''}
+                                    
+                                    ${step.output ? `
+                                        <div class="step-input-output">
+                                            <strong>📤 输出结果:</strong>
+                                            <div class="step-data">${formatStepData(step.output)}</div>
+                                        </div>
+                                    ` : ''}
+                                    
+                                    ${step.result ? `
+                                        <div class="step-input-output">
+                                            <strong>🎯 处理结果:</strong>
+                                            <div class="step-data">${formatStepData(step.result)}</div>
+                                        </div>
+                                    ` : ''}
+                                    
+                                    ${step.details ? `
+                                        <div class="step-input-output">
+                                            <strong>ℹ️ 详细信息:</strong>
+                                            <div class="step-data">${formatStepData(step.details)}</div>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            ` : ''}
+                        </div>
+                        ${step.agent ? `<div class="progress-step-agent">${step.agent}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function formatStepData(data) {
+            if (typeof data === 'string') {
+                return data.length > 200 ? data.substring(0, 200) + '...\n[数据已截断]' : data;
+            } else if (typeof data === 'object') {
+                try {
+                    const jsonStr = JSON.stringify(data, null, 2);
+                    return jsonStr.length > 500 ? jsonStr.substring(0, 500) + '...\n[JSON数据已截断]' : jsonStr;
+                } catch (e) {
+                    return '[无法解析的对象数据]';
+                }
+            } else {
+                return String(data);
+            }
+        }
+
+        function toggleStepDetails(stepId) {
+            const step = document.querySelector(`[data-step-id="${stepId}"]`);
+            if (step) {
+                if (step.classList.contains('expanded')) {
+                    step.classList.remove('expanded');
+                } else {
+                    step.classList.add('expanded');
+                }
+            }
+        }
+        
+        function getStepIcon(status) {
+            switch (status) {
+                case 'pending':
+                    return '⏳';
+                case 'in_progress':
+                case 'in-progress':
+                    return '🔄';
+                case 'completed':
+                    return '✅';
+                case 'failed':
+                    return '❌';
+                case 'warning':
+                    return '⚠️';
+                default:
+                    return '⚪';
+            }
+        }
+        
+        function connectToProgressStream(requestId, originalQuery) {
+            // Close any existing stream
+            if (currentProgressStream) {
+                currentProgressStream.close();
+            }
+            
+            const url = `${API_BASE}/progress/${requestId}`;
+            console.log(`Connecting to progress stream: ${url}`);
+            
+            currentProgressStream = new EventSource(url);
+            
+            currentProgressStream.onopen = function(event) {
+                console.log('Progress stream connected');
+                updateProgress(0, '已连接到进度更新流...', '正在处理您的请求...');
+            };
+            
+            currentProgressStream.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    console.log('Progress update received:', data);
+                    
+                    if (data.type === 'connected') {
+                        updateProgress(0, data.message);
+                    } else if (data.type === 'progress') {
+                        // Update main progress
+                        updateProgress(
+                            data.progress_percent,
+                            data.message,
+                            `正在执行: ${data.current_step_name}`
+                        );
+                        
+                        // Update steps if available
+                        if (data.all_steps && data.all_steps.length > 0) {
+                            updateProgressSteps(data.all_steps);
+                        }
+                        
+                        // Check if completed
+                        if (data.status === 'completed' && data.progress_percent >= 100) {
+                            setTimeout(() => {
+                                // Close stream and fetch final result
+                                currentProgressStream.close();
+                                currentProgressStream = null;
+                                
+                                // Wait a moment for backend to finish, then get the result
+                                setTimeout(() => {
+                                    fetchFinalResult(requestId, originalQuery);
+                                }, 1000);
+                            }, 1000);
+                        }
+                        
+                    } else if (data.type === 'heartbeat') {
+                        // Just keep the connection alive, no UI update needed
+                        console.log('Heartbeat received');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error parsing progress data:', error);
+                }
+            };
+            
+            currentProgressStream.onerror = function(event) {
+                console.error('Progress stream error:', event);
+                currentProgressStream.close();
+                currentProgressStream = null;
+                
+                // Fall back to polling for result
+                setTimeout(() => {
+                    fetchFinalResult(requestId, originalQuery);
+                }, 2000);
+            };
+            
+            // Set up timeout to prevent hanging
+            setTimeout(() => {
+                if (currentProgressStream && currentProgressStream.readyState === EventSource.OPEN) {
+                    console.log('Progress stream timeout, closing connection');
+                    currentProgressStream.close();
+                    currentProgressStream = null;
+                    fetchFinalResult(requestId, originalQuery);
+                }
+            }, 120000); // 2 minute timeout
+        }
+        
+        async function fetchFinalResult(requestId, originalQuery) {
+            try {
+                updateProgress(95, '正在获取最终结果...', '几乎完成了...');
+                
+                // First, try to get the stored result from the backend (avoid duplicate API calls)
+                const resultResponse = await fetch(`${API_BASE}/progress/${requestId}/result`);
+                
+                if (resultResponse.ok) {
+                    const resultData = await resultResponse.json();
+                    if (resultData.success && resultData.result) {
+                        const result = resultData.result;
+                        console.log('Stored query result:', result);
+                        
+                        updateProgress(100, '分析完成！', '正在生成回答...');
+                        
+                        // Keep progress display longer so users can see the steps
+                        setTimeout(() => {
+                            // Extract the actual response content
+                            const assistantResponse = result.user_response || result.response || result.answer || "分析已完成，请查看生成的代码。";
+                            
+                            // Add the actual agent response to chat
+                            addChatMessage('assistant', assistantResponse);
+                            
+                            // Display generated code if available
+                            if (result.generated_code) {
+                                displayGeneratedCode(result.generated_code, originalQuery, result.mock_mode);
+                            }
+                            
+                            // Show success message for workflow completion
+                            if (result.workflow_steps && result.workflow_steps.length > 0) {
+                                const successSteps = result.workflow_steps.filter(step => step.status === 'success').length;
+                                const totalSteps = result.workflow_steps.length;
+                                addChatMessage('system', `🎉 工作流执行完成！成功执行了 ${successSteps}/${totalSteps} 个步骤。`);
+                            }
+                            
+                            // Complete progress indicator (keep visible with toggle)
+                            setTimeout(() => {
+                                completeProgressIndicator();
+                                
+                                // Re-enable input
+                                const chatInput = document.getElementById('chatInput');
+                                const chatSendBtn = document.getElementById('chatSendBtn');
+                                chatInput.disabled = false;
+                                chatSendBtn.disabled = false;
+                                chatInput.focus();
+                            }, 2000); // Keep progress visible for 2 more seconds
+                            
+                        }, 3000); // Wait 3 seconds before showing response so users can see progress
+                        
+                        return;
+                    }
+                }
+                
+                // If no stored result available, make a fresh API call (fallback)
+                console.log('No stored result found, making fresh query...');
+                const queryResponse = await fetch(`${API_BASE}/query`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        file_id: currentFileId,
+                        query: originalQuery
+                    })
+                });
+                
+                if (queryResponse.ok) {
+                    const result = await queryResponse.json();
+                    console.log('Fresh query result:', result);
+                    
+                    updateProgress(100, '分析完成！', '正在生成回答...');
+                    
+                    // Keep progress display longer
+                    setTimeout(() => {
+                        const assistantResponse = result.user_response || result.response || result.answer || "分析已完成，但未生成具体回答。";
+                        addChatMessage('assistant', assistantResponse);
+                        
+                        if (result.generated_code) {
+                            displayGeneratedCode(result.generated_code, originalQuery, result.mock_mode);
+                        }
+                        
+                        if (result.workflow_steps && result.workflow_steps.length > 0) {
+                            const successSteps = result.workflow_steps.filter(step => step.status === 'success').length;
+                            const totalSteps = result.workflow_steps.length;
+                            addChatMessage('system', `🎉 工作流执行完成！成功执行了 ${successSteps}/${totalSteps} 个步骤。`);
+                        }
+                        
+                        setTimeout(() => {
+                            completeProgressIndicator();
+                            
+                            const chatInput = document.getElementById('chatInput');
+                            const chatSendBtn = document.getElementById('chatSendBtn');
+                            chatInput.disabled = false;
+                            chatSendBtn.disabled = false;
+                            chatInput.focus();
+                        }, 2000);
+                        
+                    }, 3000);
+                    
+                    return;
+                }
+                
+                // Fallback: Try to get progress info
+                const progressResponse = await fetch(`${API_BASE}/progress/${requestId}/info`);
+                
+                if (progressResponse.ok) {
+                    const progressData = await progressResponse.json();
+                    console.log('Final progress data:', progressData);
+                    
+                    if (progressData.success && progressData.progress.status === 'completed') {
+                        updateProgress(100, '分析完成！', '工作流已完成');
+                        
+                        // Keep progress visible longer
+                        setTimeout(() => {
+                            addChatMessage('assistant', '✅ 数据分析已完成！工作流成功执行了所有步骤。');
+                            
+                            // Show workflow summary
+                            const steps = progressData.progress.steps;
+                            const completedSteps = steps.filter(step => step.status === 'completed').length;
+                            addChatMessage('system', `📊 执行总结：${completedSteps}/${steps.length} 个步骤成功完成`);
+                            
+                            setTimeout(() => {
+                                completeProgressIndicator();
+                                
+                                // Re-enable input
+                                const chatInput = document.getElementById('chatInput');
+                                const chatSendBtn = document.getElementById('chatSendBtn');
+                                chatInput.disabled = false;
+                                chatSendBtn.disabled = false;
+                                chatInput.focus();
+                            }, 2000);
+                        }, 3000);
+                        
+                        return;
+                    }
+                }
+                
+                // If all else fails, show generic completion message
+                setTimeout(() => {
+                    hideProgressIndicator();
+                    addChatMessage('assistant', '处理完成，但无法获取详细结果。请重试您的问题。');
+                    
+                    // Re-enable input
+                    const chatInput = document.getElementById('chatInput');
+                    const chatSendBtn = document.getElementById('chatSendBtn');
+                    chatInput.disabled = false;
+                    chatSendBtn.disabled = false;
+                    chatInput.focus();
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Error fetching final result:', error);
+                setTimeout(() => {
+                    hideProgressIndicator();
+                    addChatMessage('assistant', `抱歉，获取最终结果时出现错误：${error.message}`);
+                    
+                    // Re-enable input
+                    const chatInput = document.getElementById('chatInput');
+                    const chatSendBtn = document.getElementById('chatSendBtn');
+                    chatInput.disabled = false;
+                    chatSendBtn.disabled = false;
+                    chatInput.focus();
+                }, 2000);
+            }
+        }
+        
+        function displayGeneratedCode(code, query, mockMode = false) {
+            document.getElementById('generatedCode').innerHTML = `
+                <div style="background: white; padding: 15px; border-radius: 8px;">
+                    <h4>💻 生成的Python代码</h4>
+                    <div style="color: #666; margin-bottom: 10px; font-size: 14px;">
+                        📅 ${new Date().toLocaleString()} - 基于问题: "${query}"
+                    </div>
+                    ${mockMode ? '<div style="background: #fff3e0; color: #e65100; padding: 10px; border-radius: 5px; margin-bottom: 10px;">⚠️ 演示模式 - 代码仅供参考</div>' : ''}
+                    <pre style="background: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto; font-size: 13px;"><code>${code}</code></pre>
+                </div>
+            `;
+        }
+
     </script>
 </body>
 </html>

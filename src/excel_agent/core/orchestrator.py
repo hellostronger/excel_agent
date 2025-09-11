@@ -7,6 +7,7 @@ handling intent parsing, workflow routing, and agent coordination.
 
 import asyncio
 import json
+import time
 from typing import Any, Dict, List, Optional, Tuple
 from datetime import datetime
 from enum import Enum
@@ -66,12 +67,15 @@ class Orchestrator(BaseAgent):
         self, 
         user_request: str, 
         file_path: Optional[str] = None,
-        context: Optional[Dict[str, Any]] = None
+        context: Optional[Dict[str, Any]] = None,
+        progress_tracker=None,
+        request_id: Optional[str] = None
     ) -> Dict[str, Any]:
         """Process a user request end-to-end."""
         context = context or {}
         
-        request_id = f"req_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{id(self) % 10000}"
+        if request_id is None:
+            request_id = f"req_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{id(self) % 10000}"
         context['request_id'] = request_id
         
         try:
@@ -89,19 +93,29 @@ class Orchestrator(BaseAgent):
             
             # Step 0: Check if request is Excel-related
             self.logger.info(f"🔍 [Orchestrator {request_id}] Step 0: Checking Excel relevance...")
+            if progress_tracker:
+                progress_tracker.update_step(request_id, "excel_relevance_check", "in_progress", "检查请求与Excel的相关性...")
             excel_relevance = await self._check_excel_relevance(user_request, file_path, context)
             
             if not excel_relevance['is_excel_related']:
+                if progress_tracker:
+                    progress_tracker.update_step(request_id, "excel_relevance_check", "completed", "检测到非Excel相关请求")
                 self.logger.info(f"💬 [Orchestrator {request_id}] Non-Excel request detected, using direct LLM response")
-                return await self._handle_non_excel_request(user_request, excel_relevance, request_id, start_time)
+                return await self._handle_non_excel_request(user_request, excel_relevance, request_id, start_time, progress_tracker)
             
+            if progress_tracker:
+                progress_tracker.update_step(request_id, "excel_relevance_check", "completed", "确认为Excel相关请求")
             self.logger.info(f"📊 [Orchestrator {request_id}] Excel-related request confirmed, proceeding with workflow")
             
             # Parse intent and determine workflow type
             self.logger.info(f"🧠 [Orchestrator {request_id}] Step 1: Parsing user intent...")
+            if progress_tracker:
+                progress_tracker.update_step(request_id, "intent_parsing", "in_progress", "解析用户意图和工作流类型...")
             intent_result = await self._parse_intent(user_request, context)
             workflow_type = intent_result['workflow_type']
             
+            if progress_tracker:
+                progress_tracker.update_step(request_id, "intent_parsing", "completed", f"解析完成 - 工作流类型: {workflow_type}")
             self.logger.info(f"🧠 [Orchestrator {request_id}] Intent parsed - Workflow type: {workflow_type}")
             self.logger.debug(f"🧠 [Orchestrator {request_id}] Intent details: {intent_result}")
             
@@ -110,15 +124,15 @@ class Orchestrator(BaseAgent):
             
             if workflow_type == WorkflowType.SINGLE_TABLE:
                 result = await self._execute_single_table_workflow(
-                    user_request, file_path, intent_result, request_id
+                    user_request, file_path, intent_result, request_id, progress_tracker
                 )
             elif workflow_type == WorkflowType.SINGLE_CELL:
                 result = await self._execute_single_cell_workflow(
-                    user_request, file_path, intent_result, request_id
+                    user_request, file_path, intent_result, request_id, progress_tracker
                 )
             elif workflow_type == WorkflowType.MULTI_TABLE:
                 result = await self._execute_multi_table_workflow(
-                    user_request, file_path, intent_result, request_id
+                    user_request, file_path, intent_result, request_id, progress_tracker
                 )
             else:
                 raise ValueError(f"Unknown workflow type: {workflow_type}")
@@ -193,7 +207,6 @@ Respond in JSON format:
 }}
 """
         
-        import time
         from ..utils.logging import get_logger
         
         logger = get_logger(__name__)
@@ -283,7 +296,8 @@ Respond in JSON format:
         user_request: str,
         file_path: str,
         intent_result: Dict[str, Any],
-        request_id: str = "unknown"
+        request_id: str = "unknown",
+        progress_tracker=None
     ) -> Dict[str, Any]:
         """Execute single-table workflow: File Ingest → Column Profiling → Code Generation → Execution."""
         
@@ -293,6 +307,8 @@ Respond in JSON format:
             # Step 1: File Ingest
             self.logger.info(f"📁 [FileIngest {request_id}] Step 1: File Ingest starting...")
             self.logger.info(f"📁 [FileIngest {request_id}] Processing file: {file_path}")
+            if progress_tracker:
+                progress_tracker.update_step(request_id, "file_ingest", "in_progress", f"正在读取和解析Excel文件...")
             ingest_request = FileIngestRequest(
                 agent_id="FileIngestAgent",
                 file_path=file_path,
@@ -607,9 +623,13 @@ Examples:
         user_request: str,
         excel_relevance: Dict[str, Any],
         request_id: str,
-        start_time: datetime
+        start_time: datetime,
+        progress_tracker=None
     ) -> Dict[str, Any]:
         """Handle non-Excel related requests with direct LLM response."""
+        
+        from ..utils.logging import get_logger
+        logger = get_logger(__name__)
         
         try:
             # Prepare a general conversation prompt

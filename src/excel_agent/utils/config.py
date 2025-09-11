@@ -205,5 +205,15 @@ class Config(BaseSettings):
             return False
 
 
-# Global configuration instance
-config = Config()
+# Global configuration instance - use lazy initialization to avoid circular imports
+_config_instance = None
+
+def get_config() -> Config:
+    """Get the global configuration instance with lazy initialization."""
+    global _config_instance
+    if _config_instance is None:
+        _config_instance = Config()
+    return _config_instance
+
+# For backward compatibility
+config = get_config()

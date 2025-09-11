@@ -6,9 +6,9 @@ from pathlib import Path
 from typing import Dict, Any, Optional
 from datetime import datetime
 
-from .logging import get_logger
+import logging
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class ConfigStorage:

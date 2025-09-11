@@ -9,7 +9,7 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, Any, Optional
 
-from flask import Flask, request, jsonify, render_template, g
+from flask import Flask, request, jsonify, render_template, g, Response
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import logging
@@ -19,6 +19,8 @@ import json
 # Import our Excel to HTML utility
 from utils.excel_to_html import excel_to_html, get_excel_sheets, excel_sheet_to_html, get_excel_info
 from utils.file_manager import file_manager
+from utils.relevance_matcher import relevance_matcher
+from utils.progress_tracker import progress_tracker, ProgressUpdate
 
 # Add src directory to Python path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
@@ -50,6 +52,7 @@ CORS(app)
 # Configuration
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max file size
 app.config['UPLOAD_FOLDER'] = tempfile.mkdtemp()
+app.config['JSON_AS_ASCII'] = False  # 确保JSON响应支持UTF-8编码
 
 # Setup detailed logging
 logging.basicConfig(
@@ -62,6 +65,15 @@ logging.basicConfig(
 )
 
 api_logger = logging.getLogger('excel_agent.api')
+
+# 确保所有响应都使用UTF-8编码
+@app.after_request
+def after_request(response):
+    """设置响应头确保UTF-8编码"""
+    if response.content_type.startswith('application/json'):
+        response.content_type = 'application/json; charset=utf-8'
+    response.headers['Content-Type'] = response.content_type
+    return response
 
 
 def log_request_response(f):
@@ -147,6 +159,9 @@ orchestrator = None
 uploaded_files = {}
 mcp_initialized = False
 
+# Progress tracking for Server-Sent Events
+progress_connections = {}  # request_id -> list of connections
+
 # Initialize file recovery at startup
 def initialize_file_recovery():
     """Recover uploaded files from persistent storage."""
@@ -166,6 +181,70 @@ def initialize_file_recovery():
 
 # Recover files on startup
 initialize_file_recovery()
+
+
+# Progress tracking helper functions
+def send_progress_to_client(progress_update: ProgressUpdate):
+    """Send progress update to connected clients via SSE."""
+    request_id = progress_update.request_id
+    if request_id in progress_connections:
+        # Convert to JSON
+        data = {
+            'type': 'progress',
+            'request_id': progress_update.request_id,
+            'current_step': progress_update.current_step,
+            'current_step_name': progress_update.current_step_name,
+            'progress_percent': progress_update.progress_percent,
+            'status': progress_update.status,
+            'message': progress_update.message,
+            'agent': progress_update.agent,
+            'timestamp': progress_update.timestamp,
+            'details': progress_update.details,
+            'all_steps': [
+                {
+                    'step_id': step.step_id,
+                    'step_name': step.step_name,
+                    'status': step.status,
+                    'agent': step.agent,
+                    'description': step.description,
+                    'started_at': step.started_at,
+                    'completed_at': step.completed_at,
+                    'progress_percent': step.progress_percent,
+                    'details': step.details
+                }
+                for step in progress_update.all_steps
+            ]
+        }
+        
+        # Format as Server-Sent Event
+        sse_data = f"data: {json.dumps(data, ensure_ascii=False)}\n\n"
+        
+        # Send to all connections for this request
+        queues_to_remove = []
+        for message_queue in progress_connections[request_id]:
+            try:
+                message_queue.put(sse_data)
+            except Exception as e:
+                api_logger.error(f"Failed to send progress to client: {e}")
+                queues_to_remove.append(message_queue)
+        
+        # Remove failed connections
+        for queue_obj in queues_to_remove:
+            progress_connections[request_id].remove(queue_obj)
+        
+        # Clean up empty connection lists
+        if not progress_connections[request_id]:
+            del progress_connections[request_id]
+
+
+def cleanup_progress_connections():
+    """Periodically clean up old connections."""
+    # This would be called by a background task
+    pass
+
+
+# Register progress callback
+progress_tracker.add_progress_callback(send_progress_to_client)
 
 
 def allowed_file(filename):
@@ -231,9 +310,18 @@ def run_async(coro):
             return loop.create_task(coro)
         else:
             return loop.run_until_complete(coro)
-    except RuntimeError:
-        # No event loop, create a new one
-        return asyncio.run(coro)
+    except RuntimeError as e:
+        # No event loop in current thread, create a new one
+        if "There is no current event loop" in str(e):
+            return asyncio.run(coro)
+        # For other RuntimeErrors, try to create new event loop
+        try:
+            new_loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(new_loop)
+            return new_loop.run_until_complete(coro)
+        finally:
+            new_loop.close()
+            asyncio.set_event_loop(None)
 
 
 @app.route('/')
@@ -270,6 +358,166 @@ def get_status():
             status['mcp_error'] = str(e)
     
     return jsonify(status)
+
+
+@app.route('/api/progress/<request_id>')
+def progress_stream(request_id):
+    """Server-Sent Events stream for progress updates."""
+    import queue
+    import threading
+    
+    def event_generator():
+        # Create a message queue for this connection
+        message_queue = queue.Queue()
+        connection_active = {'active': True}
+        
+        # Add this queue to progress connections
+        if request_id not in progress_connections:
+            progress_connections[request_id] = []
+        progress_connections[request_id].append(message_queue)
+        
+        try:
+            # Send initial connection message
+            initial_message = {
+                'type': 'connected',
+                'request_id': request_id,
+                'timestamp': datetime.now().isoformat(),
+                'message': '连接已建立，等待进度更新...'
+            }
+            
+            yield f"data: {json.dumps(initial_message, ensure_ascii=False)}\n\n"
+            
+            # Check for existing progress data
+            existing_progress = progress_tracker.get_request_progress(request_id)
+            if existing_progress:
+                # Send current progress state
+                progress_data = {
+                    'type': 'progress',
+                    'request_id': request_id,
+                    'current_step': existing_progress['steps'][existing_progress['current_step_index']].step_id if existing_progress['steps'] else '',
+                    'current_step_name': existing_progress['steps'][existing_progress['current_step_index']].step_name if existing_progress['steps'] else '',
+                    'progress_percent': existing_progress['progress_percent'],
+                    'status': existing_progress['status'],
+                    'message': f"当前进度: {existing_progress['progress_percent']}%",
+                    'agent': existing_progress['steps'][existing_progress['current_step_index']].agent if existing_progress['steps'] else '',
+                    'timestamp': datetime.now().isoformat(),
+                    'all_steps': [
+                        {
+                            'step_id': step.step_id,
+                            'step_name': step.step_name,
+                            'status': step.status,
+                            'agent': step.agent,
+                            'description': step.description,
+                            'progress_percent': step.progress_percent
+                        }
+                        for step in existing_progress['steps']
+                    ]
+                }
+                yield f"data: {json.dumps(progress_data, ensure_ascii=False)}\n\n"
+            
+            # Keep connection alive and check for messages
+            last_heartbeat = time.time()
+            
+            while connection_active['active']:
+                try:
+                    # Check for new messages with timeout
+                    try:
+                        message_data = message_queue.get(timeout=5.0)
+                        yield message_data
+                        message_queue.task_done()
+                    except queue.Empty:
+                        # Send heartbeat if needed
+                        current_time = time.time()
+                        if current_time - last_heartbeat > 25:  # Every 25 seconds
+                            heartbeat = {
+                                'type': 'heartbeat',
+                                'timestamp': datetime.now().isoformat()
+                            }
+                            yield f"data: {json.dumps(heartbeat, ensure_ascii=False)}\n\n"
+                            last_heartbeat = current_time
+                        
+                        # Check if request is completed
+                        current_progress = progress_tracker.get_request_progress(request_id)
+                        if current_progress and current_progress['status'] in ['completed', 'failed']:
+                            api_logger.info(f"Progress stream for {request_id} ending - status: {current_progress['status']}")
+                            break
+                            
+                except Exception as e:
+                    api_logger.error(f"Error in progress stream for {request_id}: {e}")
+                    break
+        
+        except GeneratorExit:
+            # Client disconnected
+            api_logger.info(f"Progress stream for {request_id} closed by client")
+        except Exception as e:
+            api_logger.error(f"SSE connection error for {request_id}: {e}")
+        finally:
+            # Mark connection as inactive
+            connection_active['active'] = False
+            
+            # Clean up connection
+            if request_id in progress_connections:
+                if message_queue in progress_connections[request_id]:
+                    progress_connections[request_id].remove(message_queue)
+                if not progress_connections[request_id]:
+                    del progress_connections[request_id]
+                    api_logger.info(f"All connections closed for request {request_id}")
+    
+    # Return Server-Sent Events response
+    response = Response(
+        event_generator(),
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Cache-Control'
+        }
+    )
+    
+    return response
+
+
+@app.route('/api/progress/<request_id>/info', methods=['GET'])
+@log_request_response
+def get_progress_info(request_id):
+    """Get current progress information for a request."""
+    progress_data = progress_tracker.get_request_progress(request_id)
+    
+    if progress_data is None:
+        return jsonify({'error': 'Request not found or not being tracked'}), 404
+    
+    # Convert progress data to JSON-serializable format
+    response_data = {
+        'request_id': request_id,
+        'workflow_type': progress_data['workflow_type'],
+        'started_at': progress_data['started_at'],
+        'status': progress_data['status'],
+        'progress_percent': progress_data['progress_percent'],
+        'current_step_index': progress_data['current_step_index'],
+        'steps': [
+            {
+                'step_id': step.step_id,
+                'step_name': step.step_name,
+                'status': step.status,
+                'agent': step.agent,
+                'description': step.description,
+                'started_at': step.started_at,
+                'completed_at': step.completed_at,
+                'progress_percent': step.progress_percent,
+                'details': step.details
+            }
+            for step in progress_data['steps']
+        ]
+    }
+    
+    if 'finished_at' in progress_data:
+        response_data['finished_at'] = progress_data['finished_at']
+    
+    return jsonify({
+        'success': True,
+        'progress': response_data
+    })
 
 
 @app.route('/api/initialize', methods=['POST'])
@@ -440,8 +688,12 @@ def process_file(file_id):
             return jsonify({'error': 'File not found'}), 404
         
         if not AGENT_AVAILABLE or not orchestrator:
+            # Perform text analysis even in mock mode
+            api_logger.info(f"Performing text analysis for file {file_id}")
+            text_analysis_success = file_manager.analyze_file_text(file_id, max_rows=1000)
+            
             # Return mock response if agent system not available
-            return jsonify({
+            response_data = {
                 'success': True,
                 'file_id': file_id,
                 'processed': True,
@@ -449,6 +701,8 @@ def process_file(file_id):
                 'steps': [
                     {'step': 'upload', 'status': 'completed', 'message': 'File uploaded'},
                     {'step': 'ingest', 'status': 'completed', 'message': 'File parsed (mock)'},
+                    {'step': 'text_analysis', 'status': 'completed' if text_analysis_success else 'skipped', 
+                     'message': 'Text analysis completed' if text_analysis_success else 'Text analysis skipped'},
                     {'step': 'profile', 'status': 'completed', 'message': 'Data analyzed (mock)'},
                     {'step': 'ready', 'status': 'completed', 'message': 'Ready for queries (mock)'}
                 ],
@@ -466,7 +720,20 @@ def process_file(file_id):
                         ['Tablet', 6000, 8, '2024-01-17', 'Electronics', 750, 800, 'East']
                     ]
                 }
-            })
+            }
+            
+            # Add text analysis results if available
+            if text_analysis_success:
+                text_analysis = file_manager.get_text_analysis(file_id)
+                if text_analysis:
+                    response_data['text_analysis'] = {
+                        'total_texts': text_analysis.get('total_texts', 0),
+                        'total_words': text_analysis.get('total_words', 0),
+                        'unique_word_count': text_analysis.get('unique_word_count', 0),
+                        'top_keywords': list(text_analysis.get('top_words', {}).keys())[:10]
+                    }
+            
+            return jsonify(response_data)
         
         # Process with real agent system (direct file ingestion without intent parsing)
         async def process_with_agents():
@@ -513,6 +780,21 @@ def process_file(file_id):
         # Run async processing
         result = run_async(process_with_agents())
         
+        # Perform text analysis for real agent processing
+        api_logger.info(f"Performing text analysis for file {file_id}")
+        text_analysis_success = file_manager.analyze_file_text(file_id, max_rows=1000)
+        
+        # Add text analysis results to the response
+        if text_analysis_success:
+            text_analysis = file_manager.get_text_analysis(file_id)
+            if text_analysis:
+                result['text_analysis'] = {
+                    'total_texts': text_analysis.get('total_texts', 0),
+                    'total_words': text_analysis.get('total_words', 0),
+                    'unique_word_count': text_analysis.get('unique_word_count', 0),
+                    'top_keywords': list(text_analysis.get('top_words', {}).keys())[:10]
+                }
+        
         # Update file info
         file_info['processed'] = True
         file_info['process_result'] = result
@@ -526,6 +808,55 @@ def process_file(file_id):
         
     except Exception as e:
         return jsonify({'error': f'Processing failed: {str(e)}'}), 500
+
+
+@app.route('/api/text-analysis/<file_id>', methods=['GET'])
+@log_request_response
+def get_text_analysis(file_id):
+    """Get text analysis results for a file."""
+    try:
+        file_info = get_file_info_safe(file_id)
+        if file_info is None:
+            return jsonify({'error': 'File not found'}), 404
+        
+        text_analysis = file_manager.get_text_analysis(file_id)
+        if text_analysis is None:
+            return jsonify({'error': 'Text analysis not available for this file'}), 404
+        
+        return jsonify({
+            'success': True,
+            'file_id': file_id,
+            'text_analysis': text_analysis
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to get text analysis: {str(e)}'}), 500
+
+
+@app.route('/api/search/keywords', methods=['POST'])
+@log_request_response
+def search_files_by_keywords():
+    """Search files by keywords in their text content."""
+    try:
+        data = request.get_json()
+        keywords = data.get('keywords', [])
+        match_any = data.get('match_any', True)
+        
+        if not keywords:
+            return jsonify({'error': 'Keywords are required'}), 400
+        
+        matching_files = file_manager.search_files_by_keywords(keywords, match_any)
+        
+        return jsonify({
+            'success': True,
+            'keywords': keywords,
+            'match_any': match_any,
+            'matching_files': matching_files,
+            'total_matches': len(matching_files)
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Search failed: {str(e)}'}), 500
 
 
 @app.route('/api/process/batch', methods=['POST'])
@@ -668,21 +999,90 @@ def query_data():
         if not query:
             return jsonify({'error': 'Query cannot be empty'}), 400
         
+        # Generate request ID for progress tracking
+        query_request_id = f"query_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{id(query) % 10000}"
+        
+        # Start progress tracking
+        progress_tracker.start_request(query_request_id, "single_table")
+        
         # Get file info safely with automatic recovery
         file_info = get_file_info_safe(file_id)
         if file_info is None:
+            progress_tracker.finish_request(query_request_id, "failed", "文件未找到")
             return jsonify({
                 'error': 'File not found',
                 'message': f'File ID {file_id} does not exist or has been cleaned up',
-                'suggestion': 'Please re-upload your file and try again'
+                'suggestion': 'Please re-upload your file and try again',
+                'request_id': query_request_id
             }), 404
         
+        # 智能相关性判断 - 先通过分词匹配
+        progress_tracker.update_step(query_request_id, "relevance_analysis", "in_progress", "正在分析查询相关性...")
+        api_logger.info(f"开始相关性分析: {query}")
+        text_analysis = file_manager.get_text_analysis(file_id)
+        
+        relevance_result = None
+        enhanced_query = query
+        
+        if text_analysis:
+            try:
+                # 使用相关性匹配器分析查询
+                relevance_result = relevance_matcher.match_query_to_sheets(query, text_analysis)
+                api_logger.info(f"相关性分析结果: {relevance_matcher.get_relevance_summary(relevance_result)}")
+                
+                # 如果找到关键词匹配，增强查询上下文
+                if relevance_result.is_relevant and relevance_result.method == 'keyword_match':
+                    enhanced_query = relevance_matcher.enhance_query_with_context(
+                        query, 
+                        relevance_result.matched_sheets, 
+                        relevance_result.matched_keywords
+                    )
+                    api_logger.info(f"查询已增强: {enhanced_query}")
+                
+                progress_tracker.update_step(query_request_id, "relevance_analysis", "completed", 
+                                           f"相关性分析完成 - {relevance_matcher.get_relevance_summary(relevance_result)}")
+            except Exception as e:
+                api_logger.error(f"相关性分析失败: {e}")
+                relevance_result = None
+                progress_tracker.update_step(query_request_id, "relevance_analysis", "warning", 
+                                           f"相关性分析失败: {str(e)}")
+        else:
+            api_logger.warning(f"文件 {file_id} 没有文本分析数据，跳过相关性匹配")
+            progress_tracker.update_step(query_request_id, "relevance_analysis", "completed", 
+                                       "无文本分析数据，跳过相关性匹配")
+
         if not AGENT_AVAILABLE or not orchestrator:
             # Return mock response if agent system not available
-            mock_responses = generate_mock_response(query, file_info)
+            # Simulate workflow steps with progress updates
+            progress_tracker.update_step(query_request_id, "intent_parsing", "in_progress", "解析查询意图...")
+            time.sleep(0.5)  # Simulate processing time
+            progress_tracker.update_step(query_request_id, "intent_parsing", "completed", "意图解析完成")
             
-            # Create mock workflow steps
+            progress_tracker.update_step(query_request_id, "file_ingest", "in_progress", "加载文件数据...")
+            time.sleep(0.5)
+            progress_tracker.update_step(query_request_id, "file_ingest", "completed", "文件数据加载成功")
+            
+            progress_tracker.update_step(query_request_id, "column_profiling", "in_progress", "分析数据列信息...")
+            time.sleep(0.5)
+            progress_tracker.update_step(query_request_id, "column_profiling", "completed", "数据列分析完成")
+            
+            progress_tracker.update_step(query_request_id, "code_generation", "in_progress", "生成分析代码...")
+            mock_responses = generate_mock_response(enhanced_query, file_info)
+            time.sleep(0.5)
+            progress_tracker.update_step(query_request_id, "code_generation", "completed", "分析代码生成成功")
+            
+            progress_tracker.update_step(query_request_id, "execution", "in_progress", "执行分析代码...")
+            time.sleep(0.5)
+            progress_tracker.update_step(query_request_id, "execution", "completed", "代码执行完成")
+            
+            progress_tracker.update_step(query_request_id, "response_generation", "in_progress", "生成用户回答...")
+            time.sleep(0.5)
+            progress_tracker.update_step(query_request_id, "response_generation", "completed", "回答生成完成")
+            
+            # Create mock workflow steps with relevance info
             mock_workflow_steps = [
+                {'step': 'relevance_analysis', 'status': 'success', 'agent': 'RelevanceMatcher', 
+                 'description': f'智能相关性分析: {relevance_matcher.get_relevance_summary(relevance_result) if relevance_result else "无文本分析数据"}'},
                 {'step': 'intent_parsing', 'status': 'success', 'agent': 'Orchestrator', 'description': '意图解析完成'},
                 {'step': 'file_ingest', 'status': 'success', 'agent': 'FileIngestAgent', 'description': '文件数据加载成功'},
                 {'step': 'column_profiling', 'status': 'success', 'agent': 'ColumnProfilingAgent', 'description': '数据列分析完成'},
@@ -690,9 +1090,13 @@ def query_data():
                 {'step': 'execution', 'status': 'success', 'agent': 'ExecutionAgent', 'description': '代码执行完成'}
             ]
             
-            return jsonify({
+            progress_tracker.finish_request(query_request_id, "completed", "分析完成！")
+            
+            response_data = {
                 'success': True,
+                'request_id': query_request_id,
                 'query': query,
+                'enhanced_query': enhanced_query if enhanced_query != query else None,
                 'response': mock_responses['analysis'],
                 'generated_code': mock_responses['code'],
                 'workflow_steps': mock_workflow_steps,
@@ -700,20 +1104,58 @@ def query_data():
                 'execution_time': 2.5,
                 'insights': mock_responses.get('insights', []),
                 'visualizations': mock_responses.get('visualizations', [])
-            })
+            }
+            
+            # 添加相关性分析结果
+            if relevance_result:
+                response_data['relevance_analysis'] = {
+                    'is_relevant': relevance_result.is_relevant,
+                    'confidence_score': relevance_result.confidence_score,
+                    'matched_sheets': relevance_result.matched_sheets,
+                    'matched_keywords': relevance_result.matched_keywords,
+                    'method': relevance_result.method,
+                    'summary': relevance_matcher.get_relevance_summary(relevance_result)
+                }
+            
+            return jsonify(response_data)
         
         # Process with real agent system
         async def query_with_agents():
             file_path = file_info['file_path']
             
+            # 决定是否需要LLM进一步判断相关性
+            actual_query = enhanced_query
+            context = {
+                'file_id': file_id,
+                'previous_processing': file_info.get('process_result')
+            }
+            
+            # 添加相关性分析信息到上下文
+            if relevance_result:
+                context['relevance_analysis'] = {
+                    'is_relevant': relevance_result.is_relevant,
+                    'confidence_score': relevance_result.confidence_score,
+                    'matched_sheets': relevance_result.matched_sheets,
+                    'matched_keywords': relevance_result.matched_keywords,
+                    'method': relevance_result.method
+                }
+                
+                # 如果关键词匹配失败，可能需要LLM进一步判断
+                if relevance_result.method == 'needs_llm_fallback':
+                    context['needs_relevance_check'] = True
+                    api_logger.info("关键词匹配未找到相关性，将由LLM进行进一步判断")
+                elif not relevance_result.is_relevant:
+                    # 明确不相关，可以提前返回或让LLM做最终判断
+                    context['low_relevance_warning'] = True
+                    api_logger.warning("查询与文件内容相关性较低")
+            
             # Use orchestrator to process query
             result = await orchestrator.process_user_request(
-                user_request=query,
+                user_request=actual_query,
                 file_path=file_path,
-                context={
-                    'file_id': file_id,
-                    'previous_processing': file_info.get('process_result')
-                }
+                context=context,
+                progress_tracker=progress_tracker,
+                request_id=query_request_id
             )
             
             return result
@@ -723,9 +1165,11 @@ def query_data():
         
         # Check if processing was successful
         if result.get('status') == 'failed':
+            progress_tracker.finish_request(query_request_id, "failed", "处理失败")
             api_logger.error(f"Query processing failed for file {file_id}: {result}")
             return jsonify({
                 'success': False,
+                'request_id': query_request_id,
                 'error': result.get('error', 'Query processing failed'),
                 'error_message': result.get('error_message', result.get('error', 'Unknown error')),
                 'error_type': result.get('error_type', 'ProcessingError'),
@@ -742,13 +1186,29 @@ def query_data():
                 }
             }), 500
         
+        # Mark as completed
+        progress_tracker.finish_request(query_request_id, "completed", "分析完成！")
+        
         # Handle different response types from orchestrator
         response_data = {
             'success': True,
+            'request_id': query_request_id,
             'query': query,
+            'enhanced_query': enhanced_query if enhanced_query != query else None,
             'execution_time': result.get('execution_time', 0),
             'status': result.get('status', 'completed')
         }
+        
+        # 添加相关性分析结果到真实响应
+        if relevance_result:
+            response_data['relevance_analysis'] = {
+                'is_relevant': relevance_result.is_relevant,
+                'confidence_score': relevance_result.confidence_score,
+                'matched_sheets': relevance_result.matched_sheets,
+                'matched_keywords': relevance_result.matched_keywords,
+                'method': relevance_result.method,
+                'summary': relevance_matcher.get_relevance_summary(relevance_result)
+            }
         
         # Check if this is a non-Excel request response
         if result.get('response_type') == 'general_llm_response':
@@ -1269,7 +1729,15 @@ def list_files():
             'filename': file_info['original_name'],
             'size': file_info['size'],
             'upload_time': file_info['upload_time'],
-            'processed': file_info['processed']
+            'processed': file_info['processed'],
+            'available_formats': file_manager.get_available_formats(file_id),
+            'has_markdown': file_manager.has_markdown(file_id),
+            'has_html': file_manager.has_html(file_id),
+            'format_conversions': file_info.get('format_conversions', {}),
+            'markdown_converted_at': file_info.get('markdown_converted_at'),
+            'html_converted_at': file_info.get('html_converted_at'),
+            'has_text_analysis': file_manager.get_text_analysis(file_id) is not None,
+            'text_analyzed_at': file_info.get('text_analyzed_at')
         })
     
     return jsonify({'files': files})
@@ -1295,6 +1763,166 @@ def delete_file(file_id):
         
     except Exception as e:
         return jsonify({'error': f'Delete failed: {str(e)}'}), 500
+
+
+@app.route('/api/files/<file_id>/formats', methods=['GET'])
+@log_request_response
+def get_file_formats(file_id):
+    """Get available formats for a file."""
+    try:
+        file_info = get_file_info_safe(file_id)
+        if file_info is None:
+            return jsonify({'error': 'File not found'}), 404
+        
+        formats = file_manager.get_available_formats(file_id)
+        format_details = {}
+        
+        for format_type in formats:
+            if format_type == 'original':
+                format_details['original'] = {
+                    'available': True,
+                    'path': file_info.get('file_path'),
+                    'size': file_info.get('file_size'),
+                    'type': 'original'
+                }
+            elif format_type == 'markdown':
+                format_details['markdown'] = {
+                    'available': file_manager.has_markdown(file_id),
+                    'path': file_info.get('markdown_path'),
+                    'converted_at': file_info.get('markdown_converted_at'),
+                    'type': 'markdown'
+                }
+            elif format_type == 'html':
+                format_details['html'] = {
+                    'available': file_manager.has_html(file_id),
+                    'path': file_info.get('html_path'),
+                    'converted_at': file_info.get('html_converted_at'),
+                    'type': 'html'
+                }
+        
+        return jsonify({
+            'success': True,
+            'file_id': file_id,
+            'available_formats': formats,
+            'format_details': format_details
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to get file formats: {str(e)}'}), 500
+
+
+@app.route('/api/files/<file_id>/content/<format_type>', methods=['GET'])
+@log_request_response
+def get_file_content_by_format(file_id, format_type):
+    """Get file content in a specific format."""
+    try:
+        file_info = get_file_info_safe(file_id)
+        if file_info is None:
+            return jsonify({'error': 'File not found'}), 404
+        
+        available_formats = file_manager.get_available_formats(file_id)
+        if format_type not in available_formats:
+            return jsonify({'error': f'Format {format_type} not available for this file'}), 404
+        
+        content = None
+        metadata = None
+        content_type = 'application/json'
+        
+        if format_type == 'original':
+            # For original files, return file info rather than content
+            content = "Original file content (binary data)"
+            content_type = 'text/plain'
+        elif format_type == 'markdown':
+            content = file_manager.get_markdown_content(file_id)
+            metadata = file_manager.get_markdown_metadata(file_id)
+            content_type = 'text/markdown'
+        elif format_type == 'html':
+            content = file_manager.get_html_content(file_id)
+            metadata = file_manager.get_html_metadata(file_id)
+            content_type = 'text/html'
+        
+        if content is None:
+            return jsonify({'error': f'Could not retrieve content for format {format_type}'}), 500
+        
+        # Return as JSON response with content and metadata
+        return jsonify({
+            'success': True,
+            'file_id': file_id,
+            'format': format_type,
+            'content': content,
+            'metadata': metadata,
+            'content_type': content_type
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to get file content: {str(e)}'}), 500
+
+
+@app.route('/api/files/<file_id>/keywords', methods=['GET'])
+@log_request_response
+def get_file_keywords(file_id):
+    """获取文件的关键词和文本分析结果。"""
+    try:
+        file_info = get_file_info_safe(file_id)
+        if file_info is None:
+            return jsonify({'error': 'File not found'}), 404
+        
+        # 获取文本分析结果
+        text_analysis = file_manager.get_text_analysis(file_id)
+        if not text_analysis:
+            return jsonify({'error': 'Text analysis not available for this file'}), 404
+        
+        return jsonify({
+            'success': True,
+            'file_id': file_id,
+            'filename': file_info.get('original_name', 'Unknown'),
+            'text_analysis': text_analysis,
+            'has_text_analysis': True
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to get keywords: {str(e)}'}), 500
+
+
+@app.route('/api/files/<file_id>/keywords/detailed', methods=['GET'])
+@log_request_response
+def get_detailed_keywords(file_id):
+    """获取文件的详细关键词分析结果（包含分词信息）。"""
+    try:
+        file_info = get_file_info_safe(file_id)
+        if file_info is None:
+            return jsonify({'error': 'File not found'}), 404
+        
+        file_path = file_info.get('file_path')
+        if not file_path:
+            return jsonify({'error': 'File path not available'}), 404
+        
+        # 检查文件是否为Excel文件
+        if not file_path.lower().endswith(('.xlsx', '.xls', '.xlsm')):
+            return jsonify({'error': 'File is not an Excel file'}), 400
+        
+        # 执行详细的文本分析
+        from utils.text_processor import text_processor
+        
+        try:
+            detailed_result = text_processor.process_excel_file(file_path, max_rows=1000)
+            
+            return jsonify({
+                'success': True,
+                'file_id': file_id,
+                'filename': file_info.get('original_name', 'Unknown'),
+                'detailed_analysis': detailed_result,
+                'analysis_timestamp': datetime.now().isoformat()
+            })
+            
+        except Exception as analysis_error:
+            return jsonify({
+                'error': f'Failed to analyze file: {str(analysis_error)}'
+            }), 500
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to get detailed keywords: {str(e)}'}), 500
+
 
 
 @app.route('/api/preview/<file_id>', methods=['GET'])
@@ -1644,14 +2272,14 @@ if __name__ == '__main__':
         try:
             success = asyncio.run(initialize_agent_system())
             if success:
-                print("✅ Agent system initialized successfully!")
+                print("Agent system initialized successfully!")
             else:
-                print("⚠️  Agent system initialization failed, running in mock mode")
+                print("Agent system initialization failed, running in mock mode")
         except Exception as e:
-            print(f"⚠️  Agent system initialization error: {e}")
+            print(f"Agent system initialization error: {e}")
             print("Running in mock mode...")
     else:
-        print("⚠️  Agent system not available, running in mock mode")
+        print("Agent system not available, running in mock mode")
     
     print(f"Upload folder: {app.config['UPLOAD_FOLDER']}")
     print("Starting Flask server...")
