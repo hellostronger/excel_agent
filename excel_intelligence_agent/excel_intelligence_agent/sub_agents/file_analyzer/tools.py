@@ -17,6 +17,9 @@ from google.adk.tools import ToolContext
 
 from ...shared_libraries.utils import setup_logging
 from ...shared_libraries.types import FileMetadata
+from ...shared_libraries.multimodal_extractor import multimodal_extractor
+from ...shared_libraries.tree_partitioner import intelligent_partitioner
+from ...shared_libraries.embedding_engine import get_embedding_engine
 
 # Setup logging
 logger = setup_logging()
@@ -28,22 +31,68 @@ async def analyze_file_structure(
     tool_context: ToolContext
 ) -> Dict[str, Any]:
     """
-    Analyze the overall structure of an Excel file.
+    Analyze the overall structure of an Excel file using advanced multimodal analysis.
     
-    Examines worksheets, data organization, and structural patterns.
+    Examines worksheets, data organization, structural patterns, and applies
+    ST-Raptor inspired intelligent partitioning.
     """
     try:
+        logger.info(f"Starting enhanced file structure analysis: {file_path}")
+        
+        # Step 1: Basic structure analysis
         path = Path(file_path)
         
         if path.suffix.lower() == '.xlsx':
-            return await _analyze_xlsx_structure(file_path, analysis_depth)
+            basic_structure = await _analyze_xlsx_structure(file_path, analysis_depth)
         elif path.suffix.lower() == '.xls':
-            return await _analyze_xls_structure(file_path, analysis_depth)
+            basic_structure = await _analyze_xls_structure(file_path, analysis_depth)
         else:
             raise ValueError(f"Unsupported file format: {path.suffix}")
+        
+        # Step 2: Enhanced multimodal content extraction
+        try:
+            logger.info("Performing multimodal content extraction...")
+            multimodal_content = await multimodal_extractor.extract_comprehensive_content(file_path)
+            basic_structure["multimodal_analysis"] = multimodal_content
+        except Exception as e:
+            logger.warning(f"Multimodal analysis failed: {e}")
+            basic_structure["multimodal_analysis"] = {"error": str(e), "fallback_used": True}
+        
+        # Step 3: Intelligent table partitioning
+        try:
+            logger.info("Performing intelligent table partitioning...")
+            partition_analysis = await intelligent_partitioner.analyze_and_partition(file_path)
+            basic_structure["partitioning_analysis"] = partition_analysis
+            
+            # Update structure info with partitioning insights
+            if partition_analysis.get("success"):
+                basic_structure["intelligent_partitions"] = len(partition_analysis.get("partitions", []))
+                basic_structure["processing_strategy"] = partition_analysis.get("processing_strategy", {})
+        except Exception as e:
+            logger.warning(f"Partitioning analysis failed: {e}")
+            basic_structure["partitioning_analysis"] = {"error": str(e), "fallback_used": True}
+        
+        # Step 4: Semantic analysis if embedding engine is available
+        try:
+            embedding_engine = get_embedding_engine()
+            if embedding_engine:
+                logger.info("Performing semantic structure analysis...")
+                semantic_insights = await _perform_semantic_structure_analysis(file_path, basic_structure)
+                basic_structure["semantic_analysis"] = semantic_insights
+            else:
+                basic_structure["semantic_analysis"] = {"note": "Embedding engine not available"}
+        except Exception as e:
+            logger.warning(f"Semantic analysis failed: {e}")
+            basic_structure["semantic_analysis"] = {"error": str(e)}
+        
+        # Step 5: Generate enhanced recommendations
+        basic_structure["enhanced_recommendations"] = _generate_enhanced_recommendations(basic_structure)
+        
+        logger.info("Enhanced file structure analysis completed successfully")
+        return basic_structure
             
     except Exception as e:
-        logger.error(f"File structure analysis failed: {str(e)}")
+        logger.error(f"Enhanced file structure analysis failed: {str(e)}")
         return {
             "success": False,
             "error": str(e)
@@ -596,4 +645,157 @@ def _calculate_complexity_score(factors: Dict[str, Any]) -> float:
     if factors.get("has_charts", False):
         score += 0.5
     
+    # Enhanced factors from ST-Raptor analysis
+    if factors.get("intelligent_partitions", 0) > 5:
+        score += 1
+    if factors.get("has_multimodal_content", False):
+        score += 1
+    if factors.get("semantic_complexity", 0) > 0.7:
+        score += 1
+    
     return min(score, 10.0)  # Cap at 10
+
+
+async def _perform_semantic_structure_analysis(file_path: str, structure_info: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    使用embedding模型进行语义结构分析
+    """
+    try:
+        embedding_engine = get_embedding_engine()
+        if not embedding_engine:
+            return {"error": "Embedding engine not available"}
+        
+        semantic_insights = {
+            "sheet_semantic_relationships": [],
+            "cross_sheet_semantic_similarity": {},
+            "content_categorization": {},
+            "semantic_coherence_score": 0.0
+        }
+        
+        # 从multimodal分析中提取文本内容
+        multimodal_data = structure_info.get("multimodal_analysis", {})
+        if multimodal_data.get("success"):
+            sheets_data = multimodal_data.get("sheets", [])
+            
+            # 分析工作表之间的语义关系
+            sheet_names = [sheet.get("name", "") for sheet in sheets_data]
+            if len(sheet_names) > 1:
+                # 计算工作表名称的语义相似度
+                similarity_results = embedding_engine.batch_similarity_search(
+                    sheet_names, sheet_names, top_k=min(3, len(sheet_names)-1)
+                )
+                
+                for i, (sheet_name, similar_sheets) in enumerate(zip(sheet_names, similarity_results)):
+                    # 过滤掉自己
+                    filtered_similar = [(name, score) for name, score in similar_sheets if name != sheet_name]
+                    if filtered_similar:
+                        semantic_insights["sheet_semantic_relationships"].append({
+                            "sheet": sheet_name,
+                            "similar_sheets": filtered_similar[:2]  # Top 2
+                        })
+            
+            # 分析内容分类
+            all_content_samples = []
+            sheet_content_mapping = {}
+            
+            for sheet in sheets_data:
+                sheet_name = sheet.get("name", "")
+                content_analysis = sheet.get("content_analysis", {})
+                cell_samples = content_analysis.get("cell_samples", [])
+                
+                sheet_content = [sample.get("value", "") for sample in cell_samples if sample.get("value")]
+                if sheet_content:
+                    all_content_samples.extend(sheet_content)
+                    sheet_content_mapping[sheet_name] = sheet_content
+            
+            # 使用embedding进行内容分类
+            if all_content_samples:
+                categories = ["财务数据", "人员信息", "时间数据", "产品信息", "统计数据", "文本描述"]
+                
+                try:
+                    categorized_content = embedding_engine.categorize_column_content(
+                        all_content_samples[:50],  # 限制样本数量
+                        categories
+                    )
+                    semantic_insights["content_categorization"] = categorized_content
+                except Exception as e:
+                    logger.warning(f"Content categorization failed: {e}")
+        
+        # 计算整体语义一致性
+        partitioning_data = structure_info.get("partitioning_analysis", {})
+        if partitioning_data.get("success"):
+            sheets = partitioning_data.get("sheets", [])
+            complexity_scores = [sheet.get("complexity_level", "medium") for sheet in sheets]
+            
+            # 简单的一致性评分
+            unique_complexities = len(set(complexity_scores))
+            total_sheets = len(sheets)
+            
+            if total_sheets > 0:
+                consistency_score = 1.0 - (unique_complexities - 1) / max(total_sheets - 1, 1)
+                semantic_insights["semantic_coherence_score"] = consistency_score
+        
+        return semantic_insights
+        
+    except Exception as e:
+        logger.error(f"Semantic structure analysis failed: {e}")
+        return {"error": str(e)}
+
+
+def _generate_enhanced_recommendations(structure_info: Dict[str, Any]) -> List[str]:
+    """
+    基于增强分析生成建议
+    """
+    recommendations = []
+    
+    # 基于分片分析的建议
+    partitioning_data = structure_info.get("partitioning_analysis", {})
+    if partitioning_data.get("success"):
+        strategy = partitioning_data.get("processing_strategy", {})
+        overall_strategy = strategy.get("overall_strategy", "")
+        
+        if overall_strategy == "hierarchical_multimodal":
+            recommendations.append("建议使用层次化多模态处理策略，启用并行Agent处理")
+        elif overall_strategy == "parallel_processing":
+            recommendations.append("建议使用并行处理策略，可同时分析多个表格分片")
+        
+        total_partitions = strategy.get("total_partitions", 0)
+        if total_partitions > 10:
+            recommendations.append(f"检测到{total_partitions}个分片，建议启用智能分片缓存机制")
+    
+    # 基于多模态分析的建议
+    multimodal_data = structure_info.get("multimodal_analysis", {})
+    if multimodal_data.get("success"):
+        global_insights = multimodal_data.get("global_insights", {})
+        
+        if global_insights.get("has_charts"):
+            recommendations.append("检测到图表元素，建议启用视觉内容分析")
+        if global_insights.get("has_images"):
+            recommendations.append("检测到图像内容，建议使用多模态处理管道")
+        if global_insights.get("has_formulas"):
+            recommendations.append("检测到公式，建议深度分析计算依赖关系")
+    
+    # 基于语义分析的建议
+    semantic_data = structure_info.get("semantic_analysis", {})
+    if not semantic_data.get("error"):
+        coherence_score = semantic_data.get("semantic_coherence_score", 0.0)
+        
+        if coherence_score < 0.3:
+            recommendations.append("语义一致性较低，建议检查数据质量和结构规范性")
+        elif coherence_score > 0.8:
+            recommendations.append("语义一致性良好，适合使用语义驱动的智能分析")
+        
+        relationships = semantic_data.get("sheet_semantic_relationships", [])
+        if len(relationships) > 0:
+            recommendations.append("发现工作表间语义关联，建议启用跨表关系分析")
+    
+    # 性能优化建议
+    if structure_info.get("intelligent_partitions", 0) > 8:
+        recommendations.append("建议使用embedding缓存加速重复分析")
+    
+    # 默认建议
+    if not recommendations:
+        recommendations.append("使用标准多Agent协作分析流程")
+        recommendations.append("建议启用embedding辅助的语义理解")
+    
+    return recommendations

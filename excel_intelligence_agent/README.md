@@ -29,6 +29,14 @@ A comprehensive **multi-agent Excel file analysis system** built with Google ADK
 - **Relationship Discovery**: Cross-sheet data connections
 - **Business Intelligence**: Actionable insights and recommendations
 
+### 🧠 **ST-Raptor Enhanced Features**
+- **Multimodal Content Extraction**: Processes text, structure, and visual elements
+- **Embedding-Driven Semantics**: Multi-language E5 model for semantic understanding
+- **Intelligent Table Partitioning**: Adaptive table structure decomposition
+- **Tree Structure Analysis**: Hierarchical table understanding and classification
+- **Semantic Similarity Matching**: Smart column name and content association
+- **Advanced Quality Checks**: Semantic consistency validation
+
 ## 🚀 Getting Started
 
 ### Prerequisites
