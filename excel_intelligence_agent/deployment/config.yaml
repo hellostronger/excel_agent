@@ -1,0 +1,157 @@
+# Deployment Configuration for Excel Intelligence Agent
+
+agent:
+  name: "excel-intelligence-agent"
+  description: "Multi-agent Excel file analysis system built with Google ADK"
+  version: "1.0.0"
+  display_name: "Excel Intelligence Agent"
+  
+  # Agent-specific configuration
+  capabilities:
+    - "excel_file_analysis"
+    - "data_quality_assessment" 
+    - "relationship_discovery"
+    - "business_insights_generation"
+  
+  supported_file_types:
+    - ".xlsx"
+    - ".xls" 
+    - ".xlsm"
+  
+  max_file_size_mb: 100
+  max_sheets_per_file: 50
+
+deployment:
+  # Google Cloud deployment settings
+  region: "us-central1"
+  machine_type: "n1-standard-4"
+  
+  # Scaling configuration
+  min_instances: 1
+  max_instances: 10
+  auto_scaling: true
+  
+  # Resource limits
+  memory_limit_gb: 16
+  cpu_limit: 4
+  
+  # Timeout configuration
+  request_timeout_seconds: 600
+  startup_timeout_seconds: 300
+
+models:
+  # Model configuration for different agents - 支持硅基流动模型
+  
+  # 模型提供商选择: "google" | "siliconflow"
+  provider: "siliconflow"
+  
+  root_agent:
+    # 使用硅基流动模型
+    model: "qwen-plus"              # 阿里通义千问Plus - 平衡性能和成本
+    temperature: 0.01
+    max_tokens: 8192
+    
+    # 备选Google模型
+    # model: "gemini-2.5-flash" 
+  
+  orchestrator:
+    # 使用更强大的模型进行复杂推理
+    model: "qwen-max"               # 阿里通义千问Max - 最强性能
+    temperature: 0.01
+    max_tokens: 12288
+    
+    # 备选模型
+    # model: "deepseek-chat"        # DeepSeek对话模型
+    # model: "yi-large"             # 零一万物大模型
+  
+  workers:
+    # 工作模型使用快速、经济的选择
+    model: "qwen-turbo"             # 阿里通义千问Turbo - 快速响应
+    temperature: 0.01
+    max_tokens: 6144
+    
+    # 更经济的选择
+    # model: "qwen2-7b"             # 更便宜的7B模型
+    # model: "internlm2_5-7b"       # 书生浦语模型
+
+# 硅基流动模型映射表
+siliconflow_models:
+  # 通用对话模型 (推荐用于Excel分析)
+  recommended:
+    - name: "qwen-plus"
+      display_name: "通义千问Plus"
+      description: "平衡性能和成本，适合复杂分析"
+      cost_level: "medium"
+      
+    - name: "qwen-max" 
+      display_name: "通义千问Max"
+      description: "最强性能，适合复杂推理"
+      cost_level: "high"
+      
+    - name: "qwen-turbo"
+      display_name: "通义千问Turbo" 
+      description: "快速响应，适合简单任务"
+      cost_level: "low"
+  
+  # 经济型选择
+  budget:
+    - name: "qwen2-7b"
+      display_name: "通义千问2-7B"
+      description: "经济实用，基础分析"
+      cost_level: "very_low"
+      
+    - name: "internlm2_5-7b"
+      display_name: "书生浦语2.5-7B" 
+      description: "开源模型，成本最低"
+      cost_level: "very_low"
+  
+  # 专业模型
+  specialized:
+    - name: "deepseek-coder"
+      display_name: "DeepSeek代码模型"
+      description: "专门用于代码和数据分析"
+      use_case: "code_analysis"
+      
+    - name: "deepseek-math"
+      display_name: "DeepSeek数学模型"  
+      description: "专门用于数学和统计分析"
+      use_case: "mathematical_analysis"
+
+security:
+  # Authentication and authorization
+  require_authentication: true
+  allowed_service_accounts:
+    - "excel-agent-service@{project-id}.iam.gserviceaccount.com"
+  
+  # Network security
+  vpc_connector: null  # Set to VPC connector name if needed
+  ingress: "INGRESS_TRAFFIC_ALL"  # or "INGRESS_TRAFFIC_INTERNAL_ONLY"
+
+monitoring:
+  # Observability configuration
+  enable_logging: true
+  enable_monitoring: true
+  enable_tracing: true
+  
+  # Custom metrics
+  custom_metrics:
+    - "excel_files_processed_total"
+    - "analysis_duration_seconds"
+    - "data_quality_score_average"
+    - "relationships_discovered_total"
+
+environment:
+  # Environment variables for the deployed agent
+  variables:
+    LOG_LEVEL: "INFO"
+    ENABLE_CONCURRENT_ANALYSIS: "true"
+    MAX_PARALLEL_AGENTS: "4"
+    FILE_ANALYSIS_DEPTH: "comprehensive"
+    MEMORY_THRESHOLD_MB: "512"
+  
+  # Secrets (to be created separately in Google Secret Manager)
+  secrets:
+    - name: "GEMINI_API_KEY"
+      secret_name: "excel-agent-gemini-key"
+    - name: "DATABASE_URL" 
+      secret_name: "excel-agent-db-url"

@@ -991,14 +991,32 @@ def process_batch_files():
 @app.route('/api/query', methods=['POST'])
 @log_request_response
 def query_data():
-    """Handle user queries about the data."""
+    """Handle user queries about single or multiple files."""
     try:
         data = request.get_json()
-        file_id = data.get('file_id')
         query = data.get('query', '').strip()
         
         if not query:
             return jsonify({'error': 'Query cannot be empty'}), 400
+        
+        # 统一处理文件ID - 支持单文件和多文件
+        file_ids = []
+        if 'file_ids' in data:
+            # 多文件模式
+            file_ids = data.get('file_ids', [])
+            if not isinstance(file_ids, list) or not file_ids:
+                return jsonify({'error': 'No file IDs provided'}), 400
+        elif 'file_id' in data:
+            # 单文件模式（向后兼容）
+            file_id = data.get('file_id')
+            if file_id:
+                file_ids = [file_id]
+        
+        if not file_ids:
+            return jsonify({'error': 'No file ID(s) provided'}), 400
+        
+        # 检查是否为批量查询
+        is_batch_query = len(file_ids) > 1
         
         # Generate request ID for progress tracking
         query_request_id = f"query_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{id(query) % 10000}"

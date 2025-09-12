@@ -1,0 +1,53 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "excel-intelligence-agent"
+version = "0.1.0"
+description = "Multi-agent Excel Intelligence Analysis System built with Google ADK"
+authors = ["Excel Agent Team"]
+readme = "README.md"
+packages = [{include = "excel_intelligence_agent"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+google-adk = "^1.5.0"
+google-cloud-aiplatform = {version = "^1.93.0", extras = ["adk", "agent-engines"]}
+pydantic = "^2.11.3"
+google-generativeai = "^0.8.0"
+pandas = "^2.0.0"
+openpyxl = "^3.1.0"
+xlrd = "^2.0.1"
+asyncio = "^3.4.3"
+httpx = "^0.25.0"
+aiofiles = "^23.0.0"
+
+[tool.poetry.group.dev.dependencies]
+google-cloud-aiplatform = {version = "^1.93.0", extras = ["adk", "agent-engines", "evaluation"]}
+google-adk = {version = "^1.5.0", extras = ["eval"]}
+pytest = "^7.0.0"
+pytest-asyncio = "^0.21.0"
+black = "^23.0.0"
+flake8 = "^6.0.0"
+mypy = "^1.5.0"
+
+[tool.poetry.group.test.dependencies]
+pytest-cov = "^4.0.0"
+pytest-mock = "^3.10.0"
+
+[tool.black]
+line-length = 88
+target-version = ['py39']
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
