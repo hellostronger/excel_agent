@@ -324,6 +324,9 @@ class TextProcessor:
         """
         result = self.process_excel_file(file_path, max_rows)
         
+        # 生成完整markdown内容并统计字符数
+        full_markdown_lengths = self._calculate_full_markdown_lengths(file_path, max_rows)
+
         # 简化结果，只保留关键信息
         metadata = {
             'text_analysis': {
@@ -332,7 +335,7 @@ class TextProcessor:
                 'unique_word_count': result['unique_word_count'],
                 'top_words': dict(list(
                     sorted(
-                        {word: sum(1 for sheet in result['sheets'].values() 
+                        {word: sum(1 for sheet in result['sheets'].values()
                                  for w in sheet['unique_words'] if w == word)
                          for word in result['unique_words']}.items(),
                         key=lambda x: x[1],
@@ -350,11 +353,50 @@ class TextProcessor:
                         'unique_word_count': len(sheet_data['unique_words'])
                     }
                     for sheet_name, sheet_data in result['sheets'].items()
-                }
+                },
+                'full_markdown_lengths': full_markdown_lengths  # 添加完整markdown长度信息
             }
         }
         
         return metadata
+
+    def _calculate_full_markdown_lengths(self, file_path: str, max_rows: int = None) -> Dict[str, int]:
+        """
+        计算每个工作表完整markdown内容的字符数。
+
+        Args:
+            file_path: Excel文件路径
+            max_rows: 最大读取行数
+
+        Returns:
+            每个工作表的完整markdown字符数字典
+        """
+        try:
+            from .markdown_converter import MarkdownConverter
+
+            # 创建支持完整预览的markdown转换器
+            converter = MarkdownConverter(max_rows=max_rows or 1000, preview_rows=10000)  # 设置很大的preview_rows
+
+            # 获取工作表列表
+            with pd.ExcelFile(file_path) as excel_file:
+                sheet_names = excel_file.sheet_names
+                lengths = {}
+
+                for sheet_name in sheet_names:
+                    try:
+                        # 转换工作表为完整markdown
+                        markdown_content, _ = converter._convert_sheet_to_markdown(excel_file, sheet_name, full_preview=True)
+                        lengths[sheet_name] = len(markdown_content)
+                        logger.debug(f"Sheet '{sheet_name}' full markdown length: {lengths[sheet_name]} characters")
+                    except Exception as e:
+                        logger.warning(f"Failed to calculate markdown length for sheet '{sheet_name}': {e}")
+                        lengths[sheet_name] = 0
+
+                return lengths
+
+        except Exception as e:
+            logger.error(f"Failed to calculate full markdown lengths: {e}")
+            return {}
 
 
 # 全局文本处理器实例

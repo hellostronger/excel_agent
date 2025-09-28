@@ -195,7 +195,7 @@ logs/
 sandbox/
 output/
 results/
-backend/file_storage/
+backend/file_storage/*
 
 # AI model cache
 .cache/
@@ -220,3 +220,5 @@ transformers_cache/
 .vscode/settings.json
 .vscode/launch.json
 .vscode/extensions.json
+
+file_storage/*

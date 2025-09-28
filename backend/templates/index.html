@@ -1915,10 +1915,15 @@
             }
             
             // Add event listener for sheet change
-            sheetSelect.onchange = function() {
+            sheetSelect.onchange = async function() {
                 currentSheetName = this.value;
                 console.log('Switching to sheet:', currentSheetName);
-                refreshCurrentPreview();
+                try {
+                    await refreshCurrentPreview();
+                } catch (error) {
+                    console.error('Error switching to sheet:', currentSheetName, error);
+                    showPreviewError(error, `切换到工作表 "${currentSheetName}"`);
+                }
             };
         }
 
@@ -1971,15 +1976,22 @@
                 const rowLimit = document.getElementById('rowLimitSelect').value;
                 const colLimit = document.getElementById('colLimitSelect').value;
                 
-                let url = `${API_BASE}/preview/${currentFileId}?max_rows=${rowLimit}&max_cols=${colLimit}`;
+                let url;
                 if (currentSheetName) {
-                    url += `&sheet=${encodeURIComponent(currentSheetName)}`;
+                    // Use specific sheet endpoint for better handling
+                    url = `${API_BASE}/preview/${currentFileId}/sheet/${encodeURIComponent(currentSheetName)}`;
+                    url += `?start_row=0&end_row=${rowLimit}&start_col=0&end_col=${colLimit}`;
+                } else {
+                    // Use general preview endpoint
+                    url = `${API_BASE}/preview/${currentFileId}?max_rows=${rowLimit}&max_cols=${colLimit}`;
                 }
+
+                console.log('Loading preview from:', url);
 
                 const response = await fetch(url);
                 
                 if (!response.ok) {
-                    throw new Error('Failed to load preview');
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
 
                 const result = await response.json();

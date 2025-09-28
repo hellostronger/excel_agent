@@ -163,6 +163,9 @@ mcp_initialized = False
 # Progress tracking for Server-Sent Events
 progress_connections = {}  # request_id -> list of connections
 
+# Store query results for later retrieval
+query_results = {}  # request_id -> query result data
+
 # Initialize file recovery at startup
 def initialize_file_recovery():
     """Recover uploaded files from persistent storage."""
@@ -518,6 +521,43 @@ def get_progress_info(request_id):
     return jsonify({
         'success': True,
         'progress': response_data
+    })
+
+
+@app.route('/api/progress/<request_id>/result', methods=['GET'])
+@log_request_response
+def get_progress_result(request_id):
+    """Get the final result for a completed request."""
+    # Check if request exists in progress tracker
+    progress_data = progress_tracker.get_request_progress(request_id)
+
+    if progress_data is None:
+        return jsonify({'error': 'Request not found'}), 404
+
+    # Check if request is completed
+    if progress_data['status'] not in ['completed', 'failed']:
+        return jsonify({
+            'error': 'Request not yet completed',
+            'status': progress_data['status'],
+            'progress_percent': progress_data['progress_percent']
+        }), 202  # Accepted but not ready
+
+    # Get stored result
+    stored_result = query_results.get(request_id)
+
+    if stored_result is None:
+        return jsonify({
+            'error': 'Result not found',
+            'message': 'Request completed but result data is not available'
+        }), 404
+
+    return jsonify({
+        'success': True,
+        'request_id': request_id,
+        'status': progress_data['status'],
+        'result': stored_result,  # This is what frontend expects
+        'finished_at': progress_data.get('finished_at'),
+        'progress_percent': progress_data['progress_percent']
     })
 
 
@@ -1065,6 +1105,15 @@ def query_data():
                 lightweight_result = check_lightweight_processing(file_id, relevance_result, query_request_id, query)
                 if lightweight_result:
                     api_logger.info("使用轻量级处理模式，直接基于markdown内容回答")
+
+                    # Fix response format for frontend compatibility
+                    if 'response' in lightweight_result and isinstance(lightweight_result['response'], dict):
+                        if 'analysis' in lightweight_result['response']:
+                            # Extract the actual text from nested response structure
+                            lightweight_result['response'] = lightweight_result['response']['analysis']
+
+                    # Store result for later retrieval via /result endpoint
+                    query_results[query_request_id] = lightweight_result
                     return jsonify(lightweight_result)
                 
             except Exception as e:
@@ -1270,7 +1319,16 @@ def query_data():
                 response_data['recommendations'] = result['recommendations']
             if 'technical_details' in result:
                 response_data['technical_details'] = result['technical_details']
-        
+
+        # Fix response format for frontend compatibility
+        if 'response' in response_data and isinstance(response_data['response'], dict):
+            if 'analysis' in response_data['response']:
+                # Extract the actual text from nested response structure
+                response_data['response'] = response_data['response']['analysis']
+
+        # Store result for later retrieval via /result endpoint
+        query_results[query_request_id] = response_data
+
         return jsonify(response_data)
         
     except Exception as e:
@@ -1614,7 +1672,7 @@ except Exception as e:
         }
 
 
-def extract_sheet_markdown_content(file_id: str, sheet_names: List[str]) -> Optional[str]:
+def extract_sheet_markdown_content(file_id: str, sheet_names: List[str], full_content: bool = False) -> Optional[str]:
     """
     提取指定工作表的markdown内容
     
@@ -1626,8 +1684,22 @@ def extract_sheet_markdown_content(file_id: str, sheet_names: List[str]) -> Opti
         合并后的markdown内容，如果失败则返回None
     """
     try:
-        # 获取完整的markdown内容
-        full_markdown = file_manager.get_markdown_content(file_id)
+        if full_content:
+            # 需要完整内容时，重新生成不截断的markdown
+            from backend.utils.markdown_converter import MarkdownConverter
+            file_info = file_manager.get_file_info(file_id)
+            if not file_info or 'file_path' not in file_info:
+                logger.warning(f"文件 {file_id} 信息不完整")
+                return None
+
+            # 创建支持完整预览的markdown转换器
+            converter = MarkdownConverter(preview_rows=10000)  # 设置很大的preview_rows
+            result = converter.convert_file_to_markdown(file_info['file_path'], file_id)
+            full_markdown = result.get('markdown_content', '')
+        else:
+            # 使用已缓存的markdown内容（可能截断）
+            full_markdown = file_manager.get_markdown_content(file_id)
+
         if not full_markdown:
             logger.warning(f"文件 {file_id} 没有markdown内容")
             return None
@@ -1691,17 +1763,28 @@ def check_lightweight_processing(file_id: str, relevance_result, request_id: str
         return None
     
     try:
-        # 提取匹配工作表的markdown内容
-        progress_tracker.update_step(request_id, "lightweight_processing", "in_progress", "提取匹配工作表内容...")
-        
-        sheet_markdown = extract_sheet_markdown_content(file_id, relevance_result.matched_sheets)
+        # 首先检查存储的完整markdown长度，判断是否应该使用轻量级模式
+        from backend.utils.file_manager import file_manager
+        text_analysis = file_manager.get_text_analysis(file_id)
+
+        if text_analysis and 'full_markdown_lengths' in text_analysis:
+            # 计算匹配工作表的总长度
+            full_lengths = text_analysis['full_markdown_lengths']
+            total_length = sum(full_lengths.get(sheet, 0) for sheet in relevance_result.matched_sheets)
+
+            # 如果完整内容超过2万字符，不使用轻量级模式
+            if total_length > 20000:
+                logger.info(f"匹配工作表完整内容过长 ({total_length} 字符)，回退到完整处理模式")
+                return None
+
+            logger.info(f"匹配工作表完整内容长度: {total_length} 字符，可以使用轻量级模式")
+
+        # 提取匹配工作表的完整markdown内容（不截断）
+        progress_tracker.update_step(request_id, "lightweight_processing", "in_progress", "提取匹配工作表完整内容...")
+
+        sheet_markdown = extract_sheet_markdown_content(file_id, relevance_result.matched_sheets, full_content=True)
         if not sheet_markdown:
             logger.warning("无法提取工作表markdown内容，回退到完整处理模式")
-            return None
-        
-        # 检查内容长度，如果超过2万字符，不使用轻量级模式
-        if len(sheet_markdown) > 20000:
-            logger.info(f"工作表内容过长 ({len(sheet_markdown)} 字符)，回退到完整处理模式")
             return None
         
         logger.info(f"提取到 {len(relevance_result.matched_sheets)} 个工作表的内容，共 {len(sheet_markdown)} 字符")
@@ -2353,25 +2436,29 @@ def get_file_sheets(file_id):
 
 
 @app.route('/api/preview/<file_id>/sheet/<sheet_name>', methods=['GET'])
-@log_request_response  
+@log_request_response
 def preview_specific_sheet(file_id, sheet_name):
     """Preview specific sheet of Excel file."""
     try:
+        print(f"[DEBUG] Previewing sheet '{sheet_name}' for file_id: {file_id}")
+
         file_info = get_file_info_safe(file_id)
         if file_info is None:
             return jsonify({'error': 'File not found'}), 404
         file_path = file_info['file_path']
-        
+
         # Get range parameters
         start_row = int(request.args.get('start_row', 0))
         end_row = request.args.get('end_row')
         if end_row:
             end_row = int(end_row)
-        start_col = int(request.args.get('start_col', 0))  
+        start_col = int(request.args.get('start_col', 0))
         end_col = request.args.get('end_col')
         if end_col:
             end_col = int(end_col)
-        
+
+        print(f"[DEBUG] Range: rows {start_row}-{end_row}, cols {start_col}-{end_col}")
+
         # Convert specific sheet range to HTML
         result = excel_sheet_to_html(
             file_path=file_path,

@@ -153,7 +153,7 @@ class MarkdownConverter:
             'metadata': metadata
         }
     
-    def _convert_sheet_to_markdown(self, excel_file: pd.ExcelFile, sheet_name: str) -> tuple:
+    def _convert_sheet_to_markdown(self, excel_file: pd.ExcelFile, sheet_name: str, full_preview: bool = False) -> tuple:
         """Convert a single Excel sheet to markdown."""
         markdown_content = []
         sheet_metadata = {'sheet_name': sheet_name}
@@ -224,13 +224,22 @@ class MarkdownConverter:
         # Data preview
         if len(df) > 0:
             markdown_content.append("### Data Preview")
-            preview_df = df.head(self.preview_rows)
-            
+
+            # Determine how many rows to show
+            if full_preview:
+                # Show all rows when full_preview is True
+                preview_df = df
+                show_truncation_note = False
+            else:
+                # Show limited rows for normal preview
+                preview_df = df.head(self.preview_rows)
+                show_truncation_note = len(df) > self.preview_rows
+
             # Clean data for markdown display
             clean_df = preview_df.copy()
             for col in clean_df.columns:
                 clean_df[col] = clean_df[col].apply(self._clean_cell_value)
-            
+
             # Convert to markdown table
             try:
                 md_table = clean_df.to_markdown(index=True, tablefmt='github')
@@ -238,10 +247,10 @@ class MarkdownConverter:
             except Exception as e:
                 logger.warning(f"Could not create markdown table: {e}")
                 markdown_content.append("*Could not display data table*")
-            
+
             markdown_content.append("")
-            
-            if len(df) > self.preview_rows:
+
+            if show_truncation_note:
                 markdown_content.append(f"*... and {len(df) - self.preview_rows} more rows*")
                 markdown_content.append("")
         
